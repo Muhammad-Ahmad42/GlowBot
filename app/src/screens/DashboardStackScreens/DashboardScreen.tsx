@@ -1,7 +1,7 @@
 import React from 'react'
 import { Text, View } from 'react-native';
 
-function Home() {
+function DashboardScreen() {
   return (
     <View>
         <Text>Ahmad</Text>
@@ -9,4 +9,4 @@ function Home() {
   )
 }
 
-export default Home;
+export default DashboardScreen;

@@ -1,10 +1,10 @@
 import { View } from "react-native";
-import { LoginScreen } from "./src/screens";
+import AppNavigator from "./src/navigations/AppNavigation";
 
 export default function Index() {
   return (
     <View style={{ flex: 1 }}>
-      <LoginScreen />
+      <AppNavigator />
     </View>
   );
 }
