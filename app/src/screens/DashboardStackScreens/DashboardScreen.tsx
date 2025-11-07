@@ -1,7 +1,8 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Header, SafeScreen } from "../../componenets";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome6, SimpleLineIcons } from "@expo/vector-icons";
+import { horizontalScale } from "../../utils/SizeScalingUtility";
 
 function DashboardScreen() {
   return (
@@ -13,11 +14,32 @@ function DashboardScreen() {
         isUserHeader={true}
         onRightIconPress={() => console.log("Icon pressed")}
       />
-      <View>
-        <Text>Ahmad</Text>
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <View>
+            <SimpleLineIcons name="camera" size={24} color="white" />
+            <FontAwesome6 name="arrow-right-long" size={24} color="#8d8b8bff" />
+          </View>
+          <Text>Skin Scan</Text>
+          <Text>Analyze your Skin now</Text>
+        </View>
       </View>
     </SafeScreen>
   );
 }
 
 export default DashboardScreen;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  contentContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: horizontalScale(16),
+  },
+  card:{
+    
+  }
+});
