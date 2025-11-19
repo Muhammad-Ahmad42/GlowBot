@@ -1,26 +1,26 @@
 import React, { useState } from "react";
-import { 
-  TextInput, 
-  Text, 
-  View, 
-  StyleSheet, 
-  TextInputProps, 
-  TouchableOpacity
+import {
+  TextInput,
+  Text,
+  View,
+  StyleSheet,
+  TextInputProps,
+  TouchableOpacity,
 } from "react-native";
 import {
   ms,
   verticalScale,
   horizontalScale,
-  textScale
+  textScale,
 } from "../utils/SizeScalingUtility";
 import { FormikProps } from "formik";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from "@expo/vector-icons/Ionicons";
 import Colors from "../utils/Colors";
 
 interface InputFieldProps extends TextInputProps {
   label: string;
   formikProps: FormikProps<any>;
-  formikKey: string; 
+  formikKey: string;
   secureTextEntry?: boolean;
 }
 
@@ -49,7 +49,9 @@ const CustomInput: React.FC<InputFieldProps> = ({
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
 
-      <View style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}>
+      <View
+        style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}
+      >
         <TextInput
           style={styles.input}
           onChangeText={handleChange(formikKey)}
@@ -62,7 +64,7 @@ const CustomInput: React.FC<InputFieldProps> = ({
           secureTextEntry={secureTextEntry && !showPassword}
           {...rest}
         />
-         {secureTextEntry && values[formikKey]?.length > 0 && (
+        {secureTextEntry && values[formikKey]?.length > 0 && (
           <TouchableOpacity
             onPress={() => setShowPassword((prev) => !prev)}
             style={styles.iconContainer}
@@ -94,18 +96,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: horizontalScale(1),
-    borderColor: Colors.CommonBorderColor,
+    borderColor: Colors.border,
     borderRadius: horizontalScale(8),
     backgroundColor: Colors.InputBackgroundColor,
-    shadowColor: Colors.CommonShadowColor,
+    shadowColor: Colors.border,
   },
   inputWrapperFocused: {
-    shadowColor: Colors.CommonShadowColor,
+    shadowColor: Colors.border,
     shadowOffset: { width: 0, height: verticalScale(2) },
     shadowOpacity: ms(2),
     shadowRadius: horizontalScale(2),
     elevation: ms(4),
-    borderColor: Colors.textPrimary, 
+    borderColor: Colors.textPrimary,
   },
   input: {
     flex: 1,

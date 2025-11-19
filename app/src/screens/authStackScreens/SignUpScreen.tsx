@@ -7,42 +7,25 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { 
-  horizontalScale,
-  ms, 
-  textScale
-  } from "../../utils/SizeScalingUtility";
-import { 
-  Card, 
-  CustomInput, 
-  CustomPrimaryButton 
-} from "../../componenets";
-import { 
-  Formik, 
-  FormikHelpers 
-} from "formik";
+import { horizontalScale, ms, textScale } from "../../utils/SizeScalingUtility";
+import { Card, CustomInput, CustomPrimaryButton } from "../../componenets";
+import { Formik } from "formik";
 import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
 import { useRouter } from "expo-router";
 import { SignUpValidationSchema } from "../../utils/ValidationScemas";
-
-interface SignUpFormValues {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+import Dropdown from "../../componenets/Dropdown";
 
 const SignUpScreen = () => {
   const router = useRouter();
 
-  const handleSignUp = async (
-    email: string,
-    password: string,
-    setSubmitting: (isSubmitting: boolean) => void
-  ) => {
+  const handleSignUp = async (values: any, setSubmitting: any) => {
     try {
-      console.log("Email:", email);
-      console.log("Password:", password);
+      console.log("Name:", values.name);
+      console.log("Gender:", values.gender);
+      console.log("Age:", values.age);
+      console.log("Email:", values.email);
+      console.log("Password:", values.password);
     } catch (error) {
       console.error("Signup error:", error);
     } finally {
@@ -51,104 +34,126 @@ const SignUpScreen = () => {
   };
 
   return (
-    
-   <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
+    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
       <ScrollView>
-      <View style={styles.container}>
-        <Text style={styles.heading}>GlowBot</Text>
-        <Text style={styles.subHeading}>Your AI-Powered Skin Expert</Text>
-        <Text style={styles.subtitle}>Join us and start your glow journey</Text>
+        <View style={styles.container}>
+          <Text style={styles.heading}>GlowBot</Text>
+          <Text style={styles.subHeading}>Your AI-Powered Skin Expert</Text>
+          <Text style={styles.subtitle}>
+            Join us and start your glow journey
+          </Text>
 
-        <Card style={styles.switchCardBackground}>
-          <View style={styles.switchContainer}>
-            <TouchableOpacity
-              style={styles.switchCard}
-              onPress={() => router.push("/src/screens/authStackScreens/LoginScreen")}
+          <Card style={styles.switchCardBackground}>
+            <View style={styles.switchContainer}>
+              <TouchableOpacity
+                style={styles.switchCard}
+                onPress={() =>
+                  router.push("/src/screens/authStackScreens/LoginScreen")
+                }
+              >
+                <Text style={styles.switchText}>Login</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.switchCard, styles.activeCard]}>
+                <Text style={styles.switchTextActive}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+          </Card>
+
+          <Card style={styles.formCard}>
+            <Formik
+              initialValues={{
+                name: "",
+                gender: "",
+                age: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
+              }}
+              validationSchema={SignUpValidationSchema}
+              onSubmit={(values, { setSubmitting }) => {
+                handleSignUp(values, setSubmitting);
+              }}
             >
-              <Text style={styles.switchText}>Login</Text>
-            </TouchableOpacity>
+              {(formikProps) => {
+                return (
+                  <View>
+                    <CustomInput
+                      label="Name"
+                      placeholder="Enter your Name"
+                      formikProps={formikProps}
+                      formikKey="name"
+                    />
 
-            <TouchableOpacity style={[styles.switchCard, styles.activeCard]}>
-              <Text style={styles.switchTextActive}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
-        </Card>
-
-        <Card style={styles.formCard}>
-          <Formik
-            initialValues={{
-              email: "",
-              password: "",
-              confirmPassword: "",
-            }}
-            validationSchema={SignUpValidationSchema}
-            onSubmit={(
-              values: SignUpFormValues,
-              { setSubmitting }: FormikHelpers<SignUpFormValues>
-            ) => {
-              handleSignUp(values.email, values.password, setSubmitting);
-            }}
-          >
-            {(formikProps) => {
-
-              return (
-                <View>
-                  <CustomInput
-                    label="Name"
-                    placeholder="Enter your Name"
-                    formikProps={formikProps}
-                    formikKey="password"
-                    secureTextEntry
-                  />
-                  <CustomInput
-                    label="Email"
-                    placeholder="Enter your email"
-                    formikProps={formikProps}
-                    formikKey="email"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-
-                  <CustomInput
-                    label="Password"
-                    placeholder="Enter your Password"
-                    formikProps={formikProps}
-                    formikKey="password"
-                    secureTextEntry
-                  />
-
-                  <CustomInput
-                    label="Confirm Password"
-                    placeholder="Confirm your Password"
-                    formikProps={formikProps}
-                    formikKey="confirmPassword"
-                    secureTextEntry
-                  />
-
-                  <CustomPrimaryButton
-                    title="Create Account"
-                    iconName="person-add-outline"
-                    onPress={formikProps.handleSubmit as any}
-                    
-                  />
-                  
-                  <View style={styles.footer}>
-                    <Text style={styles.footerText}>Already have an account?</Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        router.push("/src/screens/authStackScreens/LoginScreen")
+                    <Dropdown
+                      label="Gender"
+                      placeholder="Select Gender"
+                      options={["Male", "Female", "Other"]}
+                      selectedValue={formikProps.values.gender}
+                      onSelect={(value) =>
+                        formikProps.setFieldValue("gender", value)
                       }
-                    >
-                      <Text style={styles.footerLink}> Login</Text>
-                    </TouchableOpacity>
+                    />
+                    <CustomInput
+                      label="Age"
+                      placeholder="Enter your Age"
+                      formikProps={formikProps}
+                      formikKey="age"
+                      keyboardType="numeric"
+                    />
+
+                    <CustomInput
+                      label="Email"
+                      placeholder="Enter your email"
+                      formikProps={formikProps}
+                      formikKey="email"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+
+                    <CustomInput
+                      label="Password"
+                      placeholder="Enter your Password"
+                      formikProps={formikProps}
+                      formikKey="password"
+                      secureTextEntry
+                    />
+
+                    <CustomInput
+                      label="Confirm Password"
+                      placeholder="Confirm your Password"
+                      formikProps={formikProps}
+                      formikKey="confirmPassword"
+                      secureTextEntry
+                    />
+
+                    <CustomPrimaryButton
+                      title="Create Account"
+                      iconName="person-add-outline"
+                      onPress={formikProps.handleSubmit as any}
+                    />
+
+                    <View style={styles.footer}>
+                      <Text style={styles.footerText}>
+                        Already have an account?
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          router.push(
+                            "/src/screens/authStackScreens/LoginScreen"
+                          )
+                        }
+                      >
+                        <Text style={styles.footerLink}> Login</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              );
-            }}
-          </Formik>
-        </Card>
-      </View>
-        </ScrollView>
+                );
+              }}
+            </Formik>
+          </Card>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -168,7 +173,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: Colors.textPrimary,
     marginBottom: verticalScale(8),
-    marginTop:verticalScale(50)
+    marginTop: verticalScale(50),
   },
   subHeading: {
     fontSize: textScale(18),
@@ -228,7 +233,7 @@ const styles = StyleSheet.create({
     borderRadius: ms(12),
     padding: ms(20),
     elevation: 5,
-    marginBottom:verticalScale(40)
+    marginBottom: verticalScale(40),
   },
   footer: {
     flexDirection: "row",

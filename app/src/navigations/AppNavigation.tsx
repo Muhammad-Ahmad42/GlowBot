@@ -148,7 +148,7 @@ const BottomTabNavigator = () => (
 
 /* ---------------------- ROOT NAVIGATION ---------------------- */
 const AppNavigator: React.FC = () => {
-  const auth = true;
+  const auth = false;
 
   useEffect(() => {
     if (auth) {
