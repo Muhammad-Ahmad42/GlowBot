@@ -28,7 +28,6 @@ export const SignUpValidationSchema = Yup.object().shape({
     .required("Please confirm your password *"),
 
   gender: Yup.string().required("Gender is required"),
-
   age: Yup.string().required("Age is required *"),
 });
 
