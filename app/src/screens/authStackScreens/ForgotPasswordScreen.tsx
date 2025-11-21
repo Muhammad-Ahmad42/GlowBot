@@ -1,18 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
+import { KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import {
-  KeyboardAvoidingView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import {Card, CustomInput, CustomPrimaryButton} from "../../componenets"
+  Card,
+  CustomErrorModal,
+  CustomInput,
+  CustomLoader,
+  CustomPrimaryButton,
+} from "../../componenets";
 import { horizontalScale, ms, textScale } from "../../utils/SizeScalingUtility";
 import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
 import { Formik, FormikHelpers } from "formik";
 import { useRouter } from "expo-router";
 import { ForgotPasswordSchema } from "../../utils/ValidationScemas";
-
+import { useAuthStore } from "../../store/AuthStore";
 
 interface ForgotPasswordFormValues {
   email: string;
@@ -20,15 +21,23 @@ interface ForgotPasswordFormValues {
 
 const ForgotPasswordScreen = () => {
   const router = useRouter();
-
+  const { forgotPassword, loading } = useAuthStore();
+  const [notification, setNotification] = useState({
+    visible: loading,
+    message: "",
+  });
   const handleForgotPassword = async (
     email: string,
     setSubmitting: (isSubmitting: boolean) => void
   ) => {
     try {
-      console.log("Forgot password request for:", email);
-    } catch (error) {
-      console.error("Error:", error);
+      await forgotPassword(email);
+      router.push("/src/screens/authStackScreens/LoginScreen");
+    } catch (error: any) {
+      setNotification({
+        visible: true,
+        message: error.message,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -64,11 +73,11 @@ const ForgotPasswordScreen = () => {
                   autoCapitalize="none"
                 />
 
-                 <CustomPrimaryButton
-                    title="Reset Password"
-                    iconName="send-outline"
-                    onPress={formikProps.handleSubmit as any}
-                  />
+                <CustomPrimaryButton
+                  title="Reset Password"
+                  iconName="send-outline"
+                  onPress={formikProps.handleSubmit as any}
+                />
 
                 <Text
                   style={styles.backToLogin}
@@ -76,13 +85,19 @@ const ForgotPasswordScreen = () => {
                     router.push("/src/screens/authStackScreens/LoginScreen")
                   }
                 >
-                   Back to Login
+                  Back to Login
                 </Text>
               </View>
             )}
           </Formik>
         </Card>
       </View>
+      {loading && <CustomLoader visible={loading} />}
+      <CustomErrorModal
+        visible={notification.visible}
+        message={notification.message}
+        onClose={() => setNotification({ visible: false, message: "" })}
+      />
     </KeyboardAvoidingView>
   );
 };

@@ -4,6 +4,8 @@ const Colors = {
   textSecondary: "#555555",
   textMuted: "#888888",
   border: "#E0E0E0",
+  CommonLoaderColor: "#9840cfff",
+  ModalOverlayColor: "#00000050",
   PrimaryButtonBackgroundColor: "#9840cfff",
   ThemeBackgroundColor: "#e9ece8ff",
   PrimaryTextColor: "#212529",

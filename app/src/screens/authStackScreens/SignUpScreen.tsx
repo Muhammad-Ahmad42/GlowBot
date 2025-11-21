@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
   StyleSheet,
@@ -8,26 +8,38 @@ import {
   ScrollView,
 } from "react-native";
 import { horizontalScale, ms, textScale } from "../../utils/SizeScalingUtility";
-import { Card, CustomInput, CustomPrimaryButton } from "../../componenets";
+import {
+  Card,
+  CustomErrorModal,
+  CustomInput,
+  CustomLoader,
+  CustomPrimaryButton,
+  Dropdown,
+} from "../../componenets";
 import { Formik } from "formik";
 import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
 import { useRouter } from "expo-router";
 import { SignUpValidationSchema } from "../../utils/ValidationScemas";
-import Dropdown from "../../componenets/Dropdown";
+import { useAuthStore } from "../../store/AuthStore";
+
 
 const SignUpScreen = () => {
   const router = useRouter();
-
+  const { signUp, loading } = useAuthStore();
+  const [errorNotification, setErrorNotification] = useState({
+    visible: false,
+    message: "",
+  });
   const handleSignUp = async (values: any, setSubmitting: any) => {
     try {
-      console.log("Name:", values.name);
-      console.log("Gender:", values.gender);
-      console.log("Age:", values.age);
-      console.log("Email:", values.email);
-      console.log("Password:", values.password);
-    } catch (error) {
-      console.error("Signup error:", error);
+      await signUp(values.name, values.email, values.password);
+      router.push("/src/navigations/AppNavigation");
+    } catch (error: any) {
+      setErrorNotification({
+        visible: true,
+        message: error.message,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -154,6 +166,12 @@ const SignUpScreen = () => {
           </Card>
         </View>
       </ScrollView>
+      {loading && <CustomLoader visible={loading} />}
+      <CustomErrorModal
+        visible={errorNotification.visible}
+        message={errorNotification.message}
+        onClose={() => setErrorNotification({ visible: false, message: "" })}
+      />
     </KeyboardAvoidingView>
   );
 };

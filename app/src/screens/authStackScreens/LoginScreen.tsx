@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
   StyleSheet,
@@ -12,7 +12,14 @@ import Colors from "../../utils/Colors";
 import { Formik, FormikHelpers } from "formik";
 import { LogInValidationSchema } from "../../utils/ValidationScemas";
 import { useRouter } from "expo-router";
-import { Card, CustomInput, CustomPrimaryButton } from "../../componenets";
+import {
+  Card,
+  CustomErrorModal,
+  CustomInput,
+  CustomLoader,
+  CustomPrimaryButton,
+} from "../../componenets";
+import { useAuthStore } from "../../store/AuthStore";
 
 interface LoginFormValues {
   email: string;
@@ -21,6 +28,12 @@ interface LoginFormValues {
 
 const LoginScreen = () => {
   const router = useRouter();
+  const { login, loading } = useAuthStore();
+
+  const [errorNotification, setErrorNotification] = useState({
+    visible: false,
+    message: "",
+  });
 
   const handleLogin = async (
     email: string,
@@ -28,15 +41,17 @@ const LoginScreen = () => {
     setSubmitting: (isSubmitting: boolean) => void
   ) => {
     try {
-      console.log("Email:", email);
-      console.log("Password:", password);
-    } catch (error) {
-      console.error("Login error:", error);
+      await login(email, password);
+      router.push("/src/navigations/AppNavigation");
+    } catch (error: any) {
+      setErrorNotification({
+        visible: true,
+        message: error.message,
+      });
     } finally {
       setSubmitting(false);
     }
   };
-
   return (
     <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -52,7 +67,9 @@ const LoginScreen = () => {
 
             <TouchableOpacity
               style={styles.switchCard}
-              onPress={() => router.push("/src/screens/authStackScreens/SignUpScreen")}
+              onPress={() =>
+                router.push("/src/screens/authStackScreens/SignUpScreen")
+              }
             >
               <Text style={styles.switchText}>Sign Up</Text>
             </TouchableOpacity>
@@ -92,7 +109,9 @@ const LoginScreen = () => {
 
                   <TouchableOpacity
                     onPress={() =>
-                        router.push("/src/screens/authStackScreens/ForgotPasswordScreen")
+                      router.push(
+                        "/src/screens/authStackScreens/ForgotPasswordScreen"
+                      )
                     }
                   >
                     <Text style={styles.forgotPasswordText}>
@@ -109,7 +128,9 @@ const LoginScreen = () => {
                     <Text style={styles.footerText}>Dont have an account?</Text>
                     <TouchableOpacity
                       onPress={() =>
-                        router.push("/src/screens/authStackScreens/SignUpScreen")
+                        router.push(
+                          "/src/screens/authStackScreens/SignUpScreen"
+                        )
                       }
                     >
                       <Text style={styles.footerLink}> SignUp</Text>
@@ -121,6 +142,12 @@ const LoginScreen = () => {
           </Formik>
         </Card>
       </View>
+      {loading && <CustomLoader visible={loading} />}
+      <CustomErrorModal
+        visible={errorNotification.visible}
+        message={errorNotification.message}
+        onClose={() => setErrorNotification({ visible: false, message: "" })}
+      />
     </KeyboardAvoidingView>
   );
 };

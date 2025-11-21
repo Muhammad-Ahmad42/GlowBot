@@ -1,0 +1,51 @@
+type User @table {
+  displayName: String!
+  email: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  skinType: String
+  skinGoals: String
+  dateOfBirth: Date
+}
+
+type SkinConcern @table {
+  name: String!
+  description: String!
+}
+
+type UserSkinConcern @table(key: ["user", "skinConcern"]) {
+  user: User!
+  skinConcern: SkinConcern!
+  createdAt: Timestamp!
+  severity: Int
+}
+
+type Product @table {
+  name: String!
+  brand: String!
+  productType: String!
+  createdAt: Timestamp!
+  description: String
+  imageUrl: String
+  ingredients: [String]
+}
+
+type RoutineStep @table {
+  user: User!
+  product: Product
+  stepNumber: Int!
+  timeOfDay: String!
+  createdAt: Timestamp!
+  notes: String
+  recurrence: String
+}
+
+type SkinLog @table {
+  user: User!
+  logDate: Date!
+  imageUrl: String!
+  createdAt: Timestamp!
+  aiAnalysisResult: String
+  userNotes: String
+  overallRating: Int
+}

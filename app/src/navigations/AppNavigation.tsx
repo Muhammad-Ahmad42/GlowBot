@@ -17,6 +17,7 @@ import {
   ProfileScreen,
 } from "../screens";
 import { RootStackParamList } from "../types/navigation";
+import { useAuthStore } from "../store/AuthStore";
 
 /* ---------------------- STACKS ---------------------- */
 const AuthStack = createNativeStackNavigator<RootStackParamList>();
@@ -33,6 +34,7 @@ const AuthStackNavigator = () => (
   >
     <AuthStack.Screen name="LoginScreen" component={LoginScreen} />
     <AuthStack.Screen name="SignUpScreen" component={SignUpScreen} />
+    <AuthStack.Screen name="DashboardScreen" component={DashboardScreen} />
     <AuthStack.Screen
       name="ForgotPasswordScreen"
       component={ForgotPasswordScreen}
@@ -148,20 +150,21 @@ const BottomTabNavigator = () => (
 
 /* ---------------------- ROOT NAVIGATION ---------------------- */
 const AppNavigator: React.FC = () => {
-  const auth = false;
+  const { user } = useAuthStore();
 
   useEffect(() => {
-    if (auth) {
+    if (user) {
       NavigationBar.setVisibilityAsync("hidden");
       NavigationBar.setBehaviorAsync("overlay-swipe");
     } else {
       NavigationBar.setVisibilityAsync("visible");
     }
-  }, [auth]);
+  }, [user]);
+
   return (
     <>
       <StatusBar style="dark" animated />
-      {auth ? <BottomTabNavigator /> : <AuthStackNavigator />}
+      {user ? <BottomTabNavigator /> : <AuthStackNavigator />}
     </>
   );
 };

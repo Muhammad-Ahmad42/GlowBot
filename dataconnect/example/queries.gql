@@ -1,0 +1,58 @@
+mutation CreateSkinLog(
+    $userId: UUID!,
+    $imageUrl: String!,
+    $logDate: Date!,
+    $overallRating: Int,
+    $userNotes: String
+) @auth(level: USER) {
+  skinLog_insert(data: {
+    userId: $userId,
+    imageUrl: $imageUrl,
+    logDate: $logDate,
+    overallRating: $overallRating,
+    userNotes: $userNotes
+  })
+}
+
+query GetProducts @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  products {
+    id
+    name
+    brand
+    description
+    imageUrl
+    productType
+    ingredients
+  }
+}
+
+mutation AddRoutineStep(
+    $userId: UUID!,
+    $productId: UUID,
+    $createdAt: Timestamp!,
+    $notes: String,
+    $recurrence: String,
+    $stepNumber: Int!,
+    $timeOfDay: String!
+) @auth(level: USER) {
+  routineStep_insert(data: {
+    userId: $userId,
+    productId: $productId,
+    createdAt: $createdAt,
+    notes: $notes,
+    recurrence: $recurrence,
+    stepNumber: $stepNumber,
+    timeOfDay: $timeOfDay
+  })
+}
+
+query GetUserSkinConcerns($userId: UUID!) @auth(level: USER) {
+  userSkinConcerns(where: {userId: {eq: $userId}}) {
+    skinConcern {
+      id
+      name
+      description
+    }
+    severity
+  }
+}

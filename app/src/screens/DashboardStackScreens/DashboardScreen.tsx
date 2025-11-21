@@ -17,10 +17,15 @@ function DashboardScreen() {
       <View style={styles.container}>
         <View style={styles.card}>
           <View>
+            {/*CAMERA ON THE LEFT SIDE   */}
             <SimpleLineIcons name="camera" size={24} color="white" />
+            {/*THIS ICON ON THE RIGHT   */}
+
             <FontAwesome6 name="arrow-right-long" size={24} color="#8d8b8bff" />
           </View>
+          {/* YHIS TEXT IN CENTER  */}
           <Text>Skin Scan</Text>
+
           <Text>Analyze your Skin now</Text>
         </View>
       </View>
@@ -39,7 +44,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: horizontalScale(16),
   },
-  card:{
-    
-  }
+  card: {},
 });
