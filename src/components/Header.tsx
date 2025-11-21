@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, ViewStyle, TextStyle } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ViewStyle, TextStyle, ImageSourcePropType } from "react-native";
 import {
   horizontalScale,
   textScale,
@@ -11,7 +11,7 @@ import Colors from "../utils/Colors";
 interface HeaderProps {
   heading?: string;
   subTitle?: string;
-  avatarUri?: string;
+  avatarUri?: string | ImageSourcePropType;
   rightIcon?: React.ReactNode;
   onRightIconPress?: () => void;
   containerStyle?: ViewStyle;
@@ -31,12 +31,14 @@ const Header: React.FC<HeaderProps> = ({
   subtitleStyle,
   children,
 }) => {
+  const imageSource = typeof avatarUri === 'string' ? { uri: avatarUri } : avatarUri;
+
   return (
     <View style={[styles.headerContainer, containerStyle]}>
       <View style={styles.leftContainer}>
         {avatarUri && (
           <Image
-            source={{ uri: avatarUri }}
+            source={imageSource}
             style={styles.avatar}
           />
         )}

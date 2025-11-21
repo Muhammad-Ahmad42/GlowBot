@@ -15,6 +15,7 @@ import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuthStore } from "../../store/AuthStore";
+import drawable from "@/src/utils/drawable";
 
 function DashboardScreen() {
   const { user } = useAuthStore();
@@ -43,10 +44,10 @@ function DashboardScreen() {
         <Header
           heading={`Hi ${user?.displayName?.split(" ")[0] || "User"} 👋`}
           subTitle="Ready to glow today?"
-          avatarUri={user?.photoURL || "https://via.placeholder.com/50"}
+          avatarUri={user?.photoURL || drawable.reactLogo}
           rightIcon={renderNotificationIcon}
           onRightIconPress={() => { }}
-          containerStyle={{ paddingHorizontal: 0 }} // Override default padding since container has padding
+          containerStyle={{ paddingHorizontal: 0 }}
         />
 
         <ScrollView
