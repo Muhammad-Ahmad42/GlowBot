@@ -6,7 +6,6 @@ import { useAuthStore } from "../src/store/AuthStore";
 
 export default function RootLayout() {
   const { setUser } = useAuthStore();
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
