@@ -6,12 +6,12 @@ import {
   CustomInput,
   CustomLoader,
   CustomPrimaryButton,
-} from "../../componenets";
+} from "../../components";
 import { horizontalScale, ms, textScale } from "../../utils/SizeScalingUtility";
 import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
 import { Formik, FormikHelpers } from "formik";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { ForgotPasswordSchema } from "../../utils/ValidationScemas";
 import { useAuthStore } from "../../store/AuthStore";
 
@@ -20,7 +20,7 @@ interface ForgotPasswordFormValues {
 }
 
 const ForgotPasswordScreen = () => {
-  const router = useRouter();
+  const navigation = useNavigation<any>();
   const { forgotPassword, loading } = useAuthStore();
   const [notification, setNotification] = useState({
     visible: loading,
@@ -32,7 +32,7 @@ const ForgotPasswordScreen = () => {
   ) => {
     try {
       await forgotPassword(email);
-      router.push("/src/screens/authStackScreens/LoginScreen");
+      navigation.navigate("LoginScreen");
     } catch (error: any) {
       setNotification({
         visible: true,
@@ -82,7 +82,7 @@ const ForgotPasswordScreen = () => {
                 <Text
                   style={styles.backToLogin}
                   onPress={() =>
-                    router.push("/src/screens/authStackScreens/LoginScreen")
+                    navigation.navigate("LoginScreen")
                   }
                 >
                   Back to Login

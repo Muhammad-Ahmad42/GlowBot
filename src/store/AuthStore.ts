@@ -5,23 +5,28 @@ import {
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  User,
+  onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "../config/firebase";
 
 interface AuthState {
-  user: any | null;
+  user: User | null;
   loading: boolean;
   error: string | null;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
+  setUser: (user: User | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: false,
   error: null,
+
+  setUser: (user) => set({ user }),
 
   signUp: async (name, email, password) => {
     try {

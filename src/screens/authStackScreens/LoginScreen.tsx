@@ -11,14 +11,14 @@ import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
 import { Formik, FormikHelpers } from "formik";
 import { LogInValidationSchema } from "../../utils/ValidationScemas";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import {
   Card,
   CustomErrorModal,
   CustomInput,
   CustomLoader,
   CustomPrimaryButton,
-} from "../../componenets";
+} from "../../components";
 import { useAuthStore } from "../../store/AuthStore";
 
 interface LoginFormValues {
@@ -27,7 +27,7 @@ interface LoginFormValues {
 }
 
 const LoginScreen = () => {
-  const router = useRouter();
+  const navigation = useNavigation<any>();
   const { login, loading } = useAuthStore();
 
   const [errorNotification, setErrorNotification] = useState({
@@ -42,7 +42,6 @@ const LoginScreen = () => {
   ) => {
     try {
       await login(email, password);
-      router.push("/src/navigations/AppNavigation");
     } catch (error: any) {
       setErrorNotification({
         visible: true,
@@ -68,7 +67,7 @@ const LoginScreen = () => {
             <TouchableOpacity
               style={styles.switchCard}
               onPress={() =>
-                router.push("/src/screens/authStackScreens/SignUpScreen")
+                navigation.navigate("SignUpScreen")
               }
             >
               <Text style={styles.switchText}>Sign Up</Text>
@@ -109,9 +108,7 @@ const LoginScreen = () => {
 
                   <TouchableOpacity
                     onPress={() =>
-                      router.push(
-                        "/src/screens/authStackScreens/ForgotPasswordScreen"
-                      )
+                      navigation.navigate("ForgotPasswordScreen")
                     }
                   >
                     <Text style={styles.forgotPasswordText}>
@@ -128,9 +125,7 @@ const LoginScreen = () => {
                     <Text style={styles.footerText}>Dont have an account?</Text>
                     <TouchableOpacity
                       onPress={() =>
-                        router.push(
-                          "/src/screens/authStackScreens/SignUpScreen"
-                        )
+                        navigation.navigate("SignUpScreen")
                       }
                     >
                       <Text style={styles.footerLink}> SignUp</Text>

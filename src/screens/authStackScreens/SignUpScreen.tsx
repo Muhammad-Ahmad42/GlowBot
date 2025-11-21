@@ -15,17 +15,17 @@ import {
   CustomLoader,
   CustomPrimaryButton,
   Dropdown,
-} from "../../componenets";
+} from "../../components";
 import { Formik } from "formik";
 import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { SignUpValidationSchema } from "../../utils/ValidationScemas";
 import { useAuthStore } from "../../store/AuthStore";
 
 
 const SignUpScreen = () => {
-  const router = useRouter();
+  const navigation = useNavigation<any>();
   const { signUp, loading } = useAuthStore();
   const [errorNotification, setErrorNotification] = useState({
     visible: false,
@@ -34,7 +34,6 @@ const SignUpScreen = () => {
   const handleSignUp = async (values: any, setSubmitting: any) => {
     try {
       await signUp(values.name, values.email, values.password);
-      router.push("/src/navigations/AppNavigation");
     } catch (error: any) {
       setErrorNotification({
         visible: true,
@@ -60,7 +59,7 @@ const SignUpScreen = () => {
               <TouchableOpacity
                 style={styles.switchCard}
                 onPress={() =>
-                  router.push("/src/screens/authStackScreens/LoginScreen")
+                  navigation.navigate("LoginScreen")
                 }
               >
                 <Text style={styles.switchText}>Login</Text>
@@ -151,9 +150,7 @@ const SignUpScreen = () => {
                       </Text>
                       <TouchableOpacity
                         onPress={() =>
-                          router.push(
-                            "/src/screens/authStackScreens/LoginScreen"
-                          )
+                          navigation.navigate("LoginScreen")
                         }
                       >
                         <Text style={styles.footerLink}> Login</Text>
