@@ -8,8 +8,8 @@ import {
   Image,
   Switch,
 } from "react-native";
-import { Header, SafeScreen } from "@/src/components";
-import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import { Header, SafeScreen, Card, GlowButton } from "@/src/components";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   horizontalScale,
   ms,
@@ -18,10 +18,11 @@ import {
 } from "../../utils/SizeScalingUtility";
 import Colors from "../../utils/Colors";
 import { useAuthStore } from "../../store/AuthStore";
+import { useNavigation } from "@react-navigation/native";
 
 const ProfileScreen = () => {
+  const navigation = useNavigation<any>();
   const { user, logout } = useAuthStore();
-  const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [isNotificationsEnabled, setIsNotificationsEnabled] = React.useState(true);
 
   const MenuOption = ({ icon, title, subtitle, onPress, showArrow = true, rightElement }: any) => (
@@ -48,8 +49,8 @@ const ProfileScreen = () => {
           heading="Profile"
           subTitle="My Account"
           rightIcon={
-            <TouchableOpacity onPress={logout}>
-              <MaterialCommunityIcons name="logout" size={24} color={Colors.ButtonPink} />
+            <TouchableOpacity onPress={logout} style={styles.headerLogoutButton}>
+               <MaterialCommunityIcons name="logout" size={20} color={Colors.WhiteColor} />
             </TouchableOpacity>
           }
           onRightIconPress={logout}
@@ -57,7 +58,7 @@ const ProfileScreen = () => {
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           {/* User Info Card */}
-          <View style={styles.userCard}>
+          <Card style={styles.userCard}>
             <Image
               source={{ uri: user?.photoURL || "https://via.placeholder.com/100" }}
               style={styles.avatar}
@@ -65,20 +66,18 @@ const ProfileScreen = () => {
             <Text style={styles.userName}>{user?.displayName || "User Name"}</Text>
             <Text style={styles.userEmail}>{user?.email || "user@example.com"}</Text>
 
-            <TouchableOpacity style={styles.editProfileButton}>
-              <Text style={styles.editProfileText}>Edit Profile</Text>
-            </TouchableOpacity>
-          </View>
+
+          </Card>
 
           {/* Settings Section */}
-          <View style={styles.sectionContainer}>
+          <Card style={styles.sectionCard}>
             <Text style={styles.sectionHeader}>Settings</Text>
 
             <MenuOption
               icon={<Ionicons name="person-outline" size={22} color="#4CAF50" />}
               title="Personal Information"
               subtitle="Update your details"
-              onPress={() => { }}
+              onPress={() => navigation.navigate("PersonalInformation")}
             />
             <MenuOption
               icon={<Ionicons name="notifications-outline" size={22} color="#FF9800" />}
@@ -93,45 +92,35 @@ const ProfileScreen = () => {
               }
               onPress={() => setIsNotificationsEnabled(!isNotificationsEnabled)}
             />
-            <MenuOption
-              icon={<Ionicons name="moon-outline" size={22} color="#3F51B5" />}
-              title="Dark Mode"
-              rightElement={
-                <Switch
-                  value={isDarkMode}
-                  onValueChange={setIsDarkMode}
-                  trackColor={{ false: "#767577", true: Colors.TabActivePink }}
-                  thumbColor={isDarkMode ? Colors.ButtonPink : "#f4f3f4"}
-                />
-              }
-              onPress={() => setIsDarkMode(!isDarkMode)}
-            />
-          </View>
+          </Card>
 
           {/* Support Section */}
-          <View style={styles.sectionContainer}>
+          <Card style={styles.sectionCard}>
             <Text style={styles.sectionHeader}>Support</Text>
 
             <MenuOption
               icon={<Ionicons name="help-circle-outline" size={22} color="#00BCD4" />}
               title="Help & Support"
-              onPress={() => { }}
+              onPress={() => navigation.navigate("HelpSupport")}
             />
             <MenuOption
               icon={<Ionicons name="shield-checkmark-outline" size={22} color="#607D8B" />}
               title="Privacy Policy"
-              onPress={() => { }}
+              onPress={() => navigation.navigate("PrivacyPolicy")}
             />
             <MenuOption
               icon={<Ionicons name="document-text-outline" size={22} color="#795548" />}
               title="Terms & Conditions"
-              onPress={() => { }}
+              onPress={() => navigation.navigate("TermsConditions")}
             />
-          </View>
+          </Card>
 
-          <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-            <Text style={styles.logoutText}>Log Out</Text>
-          </TouchableOpacity>
+          <GlowButton
+            title="Log Out"
+            onPress={logout}
+            style={styles.logoutButton}
+            gradientColors={["#FF5252", "#D32F2F"]}
+          />
 
           <Text style={styles.versionText}>Version 1.0.0</Text>
 
@@ -149,13 +138,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.DashboardBackground,
     paddingHorizontal: horizontalScale(20),
   },
+  headerLogoutButton: {
+    padding: ms(8),
+    backgroundColor: Colors.ButtonPink,
+    borderRadius: ms(12),
+  },
   userCard: {
-    backgroundColor: "white",
-    borderRadius: ms(20),
-    padding: ms(20),
     alignItems: "center",
-    marginBottom: verticalScale(20),
-    elevation: 2,
+    marginTop: verticalScale(10),
   },
   avatar: {
     width: ms(100),
@@ -166,7 +156,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.TabActivePink,
   },
   userName: {
-    fontSize: textScale(20),
+    fontSize: textScale(22),
     fontWeight: "bold",
     color: Colors.textPrimary,
     marginBottom: verticalScale(4),
@@ -174,32 +164,25 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: textScale(14),
     color: Colors.textSecondary,
-    marginBottom: verticalScale(15),
+    marginBottom: verticalScale(20),
   },
   editProfileButton: {
-    paddingHorizontal: horizontalScale(20),
-    paddingVertical: verticalScale(8),
-    borderRadius: ms(20),
-    borderWidth: 1,
-    borderColor: Colors.ButtonPink,
+    marginTop: 0,
+    width: "60%",
+    paddingVertical: 0,
   },
-  editProfileText: {
+  editProfileButtonText: {
     fontSize: textScale(14),
-    color: Colors.ButtonPink,
-    fontWeight: "600",
   },
-  sectionContainer: {
-    backgroundColor: "white",
-    borderRadius: ms(20),
-    padding: ms(20),
-    marginBottom: verticalScale(20),
-    elevation: 2,
+  sectionCard: {
+    paddingVertical: ms(10),
   },
   sectionHeader: {
-    fontSize: textScale(16),
+    fontSize: textScale(18),
     fontWeight: "bold",
     color: Colors.textPrimary,
     marginBottom: verticalScale(15),
+    marginLeft: horizontalScale(5),
   },
   menuOption: {
     flexDirection: "row",
@@ -211,8 +194,8 @@ const styles = StyleSheet.create({
   menuIconContainer: {
     width: ms(40),
     height: ms(40),
-    borderRadius: ms(20),
-    backgroundColor: "#F5F5F5",
+    borderRadius: ms(12),
+    backgroundColor: "#F8F9FA",
     justifyContent: "center",
     alignItems: "center",
     marginRight: horizontalScale(15),
@@ -221,25 +204,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuTitle: {
-    fontSize: textScale(14),
+    fontSize: textScale(15),
     fontWeight: "600",
     color: Colors.textPrimary,
   },
   menuSubtitle: {
     fontSize: textScale(12),
     color: Colors.textMuted,
+    marginTop: verticalScale(2),
   },
   logoutButton: {
-    backgroundColor: "#FFEBEE",
-    borderRadius: ms(15),
-    paddingVertical: verticalScale(15),
-    alignItems: "center",
     marginBottom: verticalScale(20),
-  },
-  logoutText: {
-    fontSize: textScale(16),
-    fontWeight: "bold",
-    color: "#D32F2F",
   },
   versionText: {
     textAlign: "center",

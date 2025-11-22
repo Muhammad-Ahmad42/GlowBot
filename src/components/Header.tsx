@@ -8,6 +8,8 @@ import {
 } from "../utils/SizeScalingUtility";
 import Colors from "../utils/Colors";
 
+import { Ionicons } from "@expo/vector-icons";
+
 interface HeaderProps {
   heading?: string;
   subTitle?: string;
@@ -18,6 +20,8 @@ interface HeaderProps {
   titleStyle?: TextStyle;
   subtitleStyle?: TextStyle;
   children?: React.ReactNode;
+  showBackButton?: boolean;
+  onBackPress?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -30,23 +34,30 @@ const Header: React.FC<HeaderProps> = ({
   titleStyle,
   subtitleStyle,
   children,
+  showBackButton,
+  onBackPress,
 }) => {
   const imageSource = typeof avatarUri === 'string' ? { uri: avatarUri } : avatarUri;
 
   return (
     <View style={[styles.headerContainer, containerStyle]}>
       <View style={styles.leftContainer}>
-        {avatarUri && (
-          <Image
-            source={imageSource}
-            style={styles.avatar}
-          />
+        {showBackButton ? (
+          <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+        ) : (
+          avatarUri && (
+            <Image
+              source={imageSource}
+              style={styles.avatar}
+            />
+          )
         )}
         <View style={styles.textContainer}>
           {heading && (
             <View style={styles.headingRow}>
               <Text style={[styles.heading, titleStyle]}>{heading}</Text>
-              {/* Optional: Add wave emoji if needed, or pass it as part of heading */}
             </View>
           )}
           {subTitle && (
@@ -111,12 +122,10 @@ const styles = StyleSheet.create({
   rightIconContainer: {
     justifyContent: "center",
     alignItems: "center",
-    // Optional: Add default styling for icon container if needed
-    // width: ms(40),
-    // height: ms(40),
-    // borderRadius: ms(20),
-    // backgroundColor: Colors.WhiteColor,
-    // elevation: 2,
+  },
+  backButton: {
+    marginRight: horizontalScale(12),
+    padding: ms(5),
   },
 });
 

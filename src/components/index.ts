@@ -10,17 +10,24 @@ import GlowButton from "./GlowButton";
 import Header from "./Header";
 import SafeScreen from "./SafeScreen";
 import Tabs from "./Tabs";
+import CustomModal from "./CustomModal";
+import ProfileInput from "./ProfileInput";
+import ProfileImagePicker from "./ProfileImagePicker";
+
 export {
-  Card,
-  CustomDatePicker,
-  CustomErrorModal,
-  CustomFallback,
-  CustomInput,
-  CustomLoader,
-  Dropdown,
-  GlowButton,
   Header,
   SafeScreen,
   Tabs,
+  GlowButton,
+  CustomInput,
   CustomPrimaryButton,
+  CustomFallback,
+  CustomErrorModal,
+  CustomLoader,
+  CustomDatePicker,
+  Dropdown,
+  Card,
+  CustomModal,
+  ProfileInput,
+  ProfileImagePicker,
 };

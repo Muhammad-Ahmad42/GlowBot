@@ -1,10 +1,18 @@
-import LoginScreen from "./authStackScreens/LoginScreen";
-import SignUpScreen from "./authStackScreens/SignUpScreen";
-import ForgotPasswordScreen from "./authStackScreens/ForgotPasswordScreen";
-import DashboardScreen from "./DashboardStackScreens/DashboardScreen";
-import ScanScreen from "./ScanStackScreens/ScanScreen";
-import ReportScreen from "./reportStackScreens/ReportScreen";
-import ProfileScreen from "./profileStackScreens/ProfileScreen";
+import LoginScreen from "./auth/LoginScreen";
+import SignUpScreen from "./auth/SignUpScreen";
+import ForgotPasswordScreen from "./auth/ForgotPasswordScreen";
+import DashboardScreen from "./dashboard/DashboardScreen";
+import ScanScreen from "./scan/ScanScreen";
+import ReportScreen from "./report/ReportScreen";
+import ProfileScreen from "./profile/ProfileScreen";
+import PersonalInformationScreen from "./profile/PersonalInformationScreen";
+import ExpertBookingScreen from "./dashboard/ExpertBookingScreen";
+import DietPlanScreen from "./dashboard/DietPlanScreen";
+import StressHistoryScreen from "./dashboard/StressHistoryScreen";
+import HelpSupportScreen from "./profile/HelpSupportScreen";
+import PrivacyPolicyScreen from "./profile/PrivacyPolicyScreen";
+import TermsConditionsScreen from "./profile/TermsConditionsScreen";
+
 export {
     LoginScreen,
     SignUpScreen,
@@ -12,5 +20,12 @@ export {
     DashboardScreen,
     ScanScreen,
     ReportScreen,
-    ProfileScreen
+    ProfileScreen,
+    PersonalInformationScreen,
+    ExpertBookingScreen,
+    DietPlanScreen,
+    StressHistoryScreen,
+    HelpSupportScreen,
+    PrivacyPolicyScreen,
+    TermsConditionsScreen
 };

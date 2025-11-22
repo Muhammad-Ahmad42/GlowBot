@@ -8,6 +8,7 @@ import {
   ScrollView,
   Platform,
   StatusBar,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { horizontalScale, ms, textScale } from "../../utils/SizeScalingUtility";
@@ -26,6 +27,8 @@ import Colors from "../../utils/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { SignUpValidationSchema } from "../../utils/ValidationScemas";
 import { useAuthStore } from "../../store/AuthStore";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 
 const SignUpScreen = () => {
   const navigation = useNavigation<any>();
@@ -34,10 +37,26 @@ const SignUpScreen = () => {
     visible: false,
     message: "",
   });
+  const [image, setImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
 
   const handleSignUp = async (values: any, setSubmitting: any) => {
     try {
-      await signUp(values.name, values.email, values.password);
+      // In a real app, you would upload the image here and get a URL
+      // For now, we just pass the local URI if needed, or handle it in the store
+      await signUp(values.name, values.email, values.password, image);
     } catch (error: any) {
       setErrorNotification({
         visible: true,
@@ -92,6 +111,22 @@ const SignUpScreen = () => {
             </Card>
 
             <Card style={styles.formCard}>
+              <View style={styles.imageContainer}>
+                <TouchableOpacity onPress={pickImage} style={styles.imageWrapper}>
+                  {image ? (
+                    <Image source={{ uri: image }} style={styles.profileImage} />
+                  ) : (
+                    <View style={styles.placeholderImage}>
+                      <Ionicons name="camera-outline" size={40} color={Colors.textMuted} />
+                    </View>
+                  )}
+                  <View style={styles.editIconContainer}>
+                    <Ionicons name="pencil" size={16} color="white" />
+                  </View>
+                </TouchableOpacity>
+                <Text style={styles.uploadText}>Upload Profile Picture</Text>
+              </View>
+
               <Formik
                 initialValues={{
                   name: "",
@@ -291,6 +326,47 @@ const styles = StyleSheet.create({
     padding: ms(25),
     elevation: 5,
     marginBottom: verticalScale(40),
+  },
+  imageContainer: {
+    alignItems: "center",
+    marginBottom: verticalScale(20),
+  },
+  imageWrapper: {
+    position: "relative",
+    marginBottom: verticalScale(10),
+  },
+  profileImage: {
+    width: ms(100),
+    height: ms(100),
+    borderRadius: ms(50),
+  },
+  placeholderImage: {
+    width: ms(100),
+    height: ms(100),
+    borderRadius: ms(50),
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  editIconContainer: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: Colors.ButtonPink,
+    width: ms(30),
+    height: ms(30),
+    borderRadius: ms(15),
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "white",
+  },
+  uploadText: {
+    fontSize: textScale(14),
+    color: Colors.textSecondary,
+    marginTop: verticalScale(5),
   },
   footer: {
     flexDirection: "row",

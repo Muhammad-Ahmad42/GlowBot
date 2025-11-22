@@ -14,7 +14,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
-  signUp: (name: string, email: string, password: string) => Promise<void>;
+  signUp: (name: string, email: string, password: string, photoURL?: string | null) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setUser: (user) => set({ user }),
 
-  signUp: async (name, email, password) => {
+  signUp: async (name, email, password, photoURL) => {
     try {
       set({ loading: true, error: null });
 
@@ -39,6 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       );
       await updateProfile(userCredential.user, {
         displayName: name,
+        photoURL: photoURL || null,
       });
 
       set({ user: userCredential.user });

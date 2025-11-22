@@ -88,7 +88,7 @@ function DashboardScreen() {
           currentLevel="Low"
           progressPercent={50}
           connected={true}
-          // onViewHistory={() => navigation.navigate("StressHistory")}
+          onViewHistory={() => navigation.navigate("StressHistory")}
          />
         <DietTipSection
           title="Diet Tip of the Day"
@@ -100,7 +100,7 @@ function DashboardScreen() {
              { name: "Orange", icon: "fruit-cherries", color: "#FF9800" },
              { name: "Kiwi", icon: "leaf", color: "#4CAF50" },
           ]}
-          // onPressButton={() => navigation.navigate("DietPlan")}
+          onPressButton={() => navigation.navigate("DietPlan")}
         />
 
 
@@ -110,7 +110,7 @@ function DashboardScreen() {
         subtitle="Get personalized advice for your pigmentation concerns."
         buttonTitle="Book Consultation"
         online={true}
-        // onPressButton={() => navigation.navigate("ExpertBooking")}
+        onPressButton={() => navigation.navigate("ExpertBooking")}
       />
 
         </ScrollView>

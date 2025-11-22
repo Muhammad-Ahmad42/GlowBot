@@ -15,6 +15,13 @@ import {
   ReportScreen,
   ScanScreen,
   ProfileScreen,
+  PersonalInformationScreen,
+  ExpertBookingScreen,
+  DietPlanScreen,
+  StressHistoryScreen,
+  HelpSupportScreen,
+  PrivacyPolicyScreen,
+  TermsConditionsScreen,
 } from "../screens";
 import { RootStackParamList } from "../types/navigation";
 import { useAuthStore } from "../store/AuthStore";
@@ -46,6 +53,9 @@ const AuthStackNavigator = () => (
 const DashboardStackNavigator = () => (
   <DashboardStack.Navigator screenOptions={{ headerShown: false }}>
     <DashboardStack.Screen name="DashboardScreen" component={DashboardScreen} />
+    <DashboardStack.Screen name="ExpertBooking" component={ExpertBookingScreen} />
+    <DashboardStack.Screen name="DietPlan" component={DietPlanScreen} />
+    <DashboardStack.Screen name="StressHistory" component={StressHistoryScreen} />
   </DashboardStack.Navigator>
 );
 
@@ -67,6 +77,10 @@ const ScanStackNavigator = () => (
 const ProfileStackNavigator = () => (
   <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
     <ProfileStack.Screen name="ProfileScreen" component={ProfileScreen} />
+    <ProfileStack.Screen name="PersonalInformation" component={PersonalInformationScreen} />
+    <ProfileStack.Screen name="HelpSupport" component={HelpSupportScreen} />
+    <ProfileStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+    <ProfileStack.Screen name="TermsConditions" component={TermsConditionsScreen} />
   </ProfileStack.Navigator>
 );
 
