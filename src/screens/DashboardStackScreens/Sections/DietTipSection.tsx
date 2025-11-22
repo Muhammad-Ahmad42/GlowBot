@@ -1,0 +1,131 @@
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import Colors from "@/src/utils/Colors";
+import { ms, textScale, verticalScale } from "@/src/utils/SizeScalingUtility";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import GlowButton from "@/src/components/GlowButton";
+
+interface DietItem {
+  name: string;
+  icon: string;
+  color: string;
+}
+
+interface Props {
+  title: string;
+  mainTip: string;
+  description: string;
+  mainIcon: string;
+  items: DietItem[];
+  onPressButton?: () => void;
+}
+
+const DietTipSection: React.FC<Props> = ({
+  title,
+  mainTip,
+  description,
+  mainIcon,
+  items,
+  onPressButton = () => {},
+}) => {
+  return (
+    <View style={styles.sectionContainer}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <MaterialCommunityIcons name="lightbulb-on" size={20} color="#FBC02D" />
+      </View>
+
+      <View style={styles.mainTipRow}>
+        <View style={styles.mainIconContainer}>
+          <MaterialCommunityIcons name={mainIcon as any} size={30} color={Colors.DietButton} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.mainTipTitle}>{mainTip}</Text>
+          <Text style={styles.mainTipDesc}>{description}</Text>
+        </View>
+      </View>
+
+      <View style={styles.itemsRow}>
+        {items.map((item, index) => (
+          <View key={index} style={styles.itemContainer}>
+            <MaterialCommunityIcons
+              name={item.icon as any}
+              size={20}
+              color={item.color}
+              style={{ marginBottom: 5 }}
+            />
+            <Text style={styles.itemText}>{item.name}</Text>
+          </View>
+        ))}
+      </View>
+
+      <GlowButton
+        title="Get Personalized Plan"
+        onPress={onPressButton}
+        gradientColors={[Colors.DietButton, Colors.DietButton]}
+      />
+    </View>
+  );
+};
+
+export default DietTipSection;
+
+const styles = StyleSheet.create({
+  sectionContainer: {
+    backgroundColor: Colors.WhiteColor,
+    borderRadius: ms(20),
+    padding: ms(20),
+    elevation: 2,
+    marginBottom: verticalScale(20),
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: verticalScale(20),
+  },
+  sectionTitle: {
+    fontSize: textScale(16),
+    fontWeight: "bold",
+    color: Colors.textPrimary,
+  },
+  mainTipRow: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  mainIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: Colors.DietIconBg,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 15,
+  },
+  mainTipTitle: {
+    fontSize: textScale(16),
+    fontWeight: "bold",
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  mainTipDesc: {
+    fontSize: textScale(13),
+    color: Colors.textSecondary,
+  },
+  itemsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  itemContainer: {
+    width: "30%",
+    backgroundColor: Colors.ActivityIconBg,
+    borderRadius: 12,
+    padding: 10,
+    alignItems: "center",
+  },
+  itemText: {
+    fontSize: textScale(12),
+    color: Colors.textPrimary,
+  },
+});

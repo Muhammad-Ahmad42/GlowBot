@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, StyleSheet, Text, View, Platform, StatusBar } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   Card,
   CustomErrorModal,
@@ -23,7 +24,7 @@ const ForgotPasswordScreen = () => {
   const navigation = useNavigation<any>();
   const { forgotPassword, loading } = useAuthStore();
   const [notification, setNotification] = useState({
-    visible: loading,
+    visible: false,
     message: "",
   });
   const handleForgotPassword = async (
@@ -44,8 +45,12 @@ const ForgotPasswordScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
-      <View style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+      <LinearGradient
+        colors={[Colors.AuthBackgroundStart, Colors.AuthBackgroundEnd]}
+        style={styles.container}
+      >
+        <StatusBar barStyle="dark-content" />
         <Text style={styles.heading}>Forgot Password?</Text>
         <Text style={styles.subtitle}>
           Enter your registered email to reset your password.
@@ -91,7 +96,7 @@ const ForgotPasswordScreen = () => {
             )}
           </Formik>
         </Card>
-      </View>
+      </LinearGradient>
       {loading && <CustomLoader visible={loading} />}
       <CustomErrorModal
         visible={notification.visible}
@@ -109,14 +114,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.backgroundPrimary,
     paddingHorizontal: horizontalScale(20),
   },
   heading: {
     fontSize: textScale(28),
-    fontWeight: "900",
+    fontWeight: "800",
     color: Colors.textPrimary,
     marginBottom: verticalScale(8),
+    letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: textScale(14),
@@ -128,8 +133,8 @@ const styles = StyleSheet.create({
   formCard: {
     width: "100%",
     backgroundColor: Colors.WhiteColor,
-    borderRadius: ms(12),
-    padding: ms(20),
+    borderRadius: ms(20),
+    padding: ms(25),
     elevation: 5,
   },
   backToLogin: {

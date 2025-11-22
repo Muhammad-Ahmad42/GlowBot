@@ -8,7 +8,7 @@ import {
   Image,
   Switch,
 } from "react-native";
-import { Header, SafeScreen } from "../../components";
+import { Header, SafeScreen } from "@/src/components";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import {
   horizontalScale,

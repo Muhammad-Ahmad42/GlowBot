@@ -5,7 +5,10 @@ import {
   Text,
   View,
   TouchableOpacity,
+  Platform,
+  StatusBar,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { horizontalScale, ms, textScale } from "../../utils/SizeScalingUtility";
 import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
@@ -52,8 +55,12 @@ const LoginScreen = () => {
     }
   };
   return (
-    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
-      <View style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+      <LinearGradient
+        colors={[Colors.AuthBackgroundStart, Colors.AuthBackgroundEnd]}
+        style={styles.container}
+      >
+        <StatusBar barStyle="dark-content" />
         <Text style={styles.heading}>GlowBot</Text>
         <Text style={styles.subHeading}>Your AI-Powered Skin Expert</Text>
         <Text style={styles.subtitle}>Welcome back to your glow journey</Text>
@@ -136,7 +143,8 @@ const LoginScreen = () => {
             }}
           </Formik>
         </Card>
-      </View>
+
+      </LinearGradient>
       {loading && <CustomLoader visible={loading} />}
       <CustomErrorModal
         visible={errorNotification.visible}
@@ -154,14 +162,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.backgroundPrimary,
     paddingHorizontal: horizontalScale(20),
   },
   heading: {
-    fontSize: textScale(30),
-    fontWeight: "900",
+    fontSize: textScale(32),
+    fontWeight: "800",
     color: Colors.textPrimary,
-    marginBottom: verticalScale(8),
+    marginBottom: verticalScale(5),
+    letterSpacing: 0.5,
   },
   subHeading: {
     fontSize: textScale(18),
@@ -178,9 +186,9 @@ const styles = StyleSheet.create({
 
   switchCardBackground: {
     width: "100%",
-    backgroundColor: Colors.WhiteColor,
-    borderRadius: ms(15),
-    padding: ms(10),
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: ms(30),
+    padding: ms(5),
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -196,14 +204,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: verticalScale(12),
-    borderRadius: ms(10),
+    paddingVertical: verticalScale(10),
+    borderRadius: ms(25),
     backgroundColor: Colors.WhiteColor,
     marginHorizontal: horizontalScale(5),
     elevation: 2,
   },
   activeCard: {
-    backgroundColor: Colors.BlackColor,
+    backgroundColor: Colors.PrimaryButtonBackgroundColor,
+    shadowColor: Colors.PrimaryButtonBackgroundColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
   },
   switchText: {
     fontSize: textScale(15),
@@ -219,8 +232,8 @@ const styles = StyleSheet.create({
   formCard: {
     width: "100%",
     backgroundColor: Colors.WhiteColor,
-    borderRadius: ms(12),
-    padding: ms(20),
+    borderRadius: ms(20),
+    padding: ms(25),
     elevation: 5,
   },
   forgotPasswordText: {

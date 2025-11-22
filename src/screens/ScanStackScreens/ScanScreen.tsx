@@ -5,10 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Image,
   Alert,
 } from "react-native";
-import { Header, SafeScreen } from "../../components";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import {
   horizontalScale,
@@ -20,6 +18,7 @@ import Colors from "../../utils/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
+import { Header, SafeScreen } from "@/src/components";
 
 const ScanScreen = () => {
   const navigation = useNavigation<any>();

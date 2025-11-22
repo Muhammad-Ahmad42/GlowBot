@@ -6,7 +6,7 @@ const Colors = {
   border: "#E0E0E0",
   CommonLoaderColor: "#9840cfff",
   ModalOverlayColor: "#00000050",
-  PrimaryButtonBackgroundColor: "#9840cfff",
+  PrimaryButtonBackgroundColor: "#FF6B95",
   ThemeBackgroundColor: "#e9ece8ff",
   PrimaryTextColor: "#212529",
   SecondaryTextColor: "#45455cff",
@@ -47,5 +47,10 @@ const Colors = {
   ProgressBarBackground: "#E0E0E0",
   ProgressBarFill: "#448AFF",
   DietButton: "#FFB300",
+  // Auth Colors
+  AuthGradientStart: "#FF8C61",
+  AuthGradientEnd: "#FF6B95",
+  AuthBackgroundStart: "#FFF5F5",
+  AuthBackgroundEnd: "#FFE9E9",
 };
 export default Colors;

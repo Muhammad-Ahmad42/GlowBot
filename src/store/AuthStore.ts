@@ -44,6 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: userCredential.user });
     } catch (error: any) {
       set({ error: error.message });
+      throw error;
     } finally {
       set({ loading: false });
     }

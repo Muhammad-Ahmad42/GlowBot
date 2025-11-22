@@ -5,30 +5,34 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
-  View,
 } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { horizontalScale, ms, textScale } from "../utils/SizeScalingUtility";
 import Colors from "../utils/Colors";
 
-interface CustomPrimaryButtonProps {
+interface GlowButtonProps {
   title: string;
   onPress: () => void;
-  iconName?: keyof typeof Ionicons.glyphMap;
   disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  gradientColors?: readonly [string, string, ...string[]];
 }
 
-const CustomPrimaryButton: React.FC<CustomPrimaryButtonProps> = ({
+const GlowButton: React.FC<GlowButtonProps> = ({
   title,
   onPress,
-  iconName,
   disabled = false,
   style,
   textStyle,
+  gradientColors,
 }) => {
+  const colors: readonly [string, string, ...string[]] = 
+    gradientColors || 
+    (disabled 
+      ? [Colors.textMuted, Colors.textMuted] 
+      : [Colors.AuthGradientStart, Colors.AuthGradientEnd]);
+
   return (
     <TouchableOpacity
       style={[styles.wrapper, style]}
@@ -37,55 +41,41 @@ const CustomPrimaryButton: React.FC<CustomPrimaryButtonProps> = ({
       activeOpacity={0.85}
     >
       <LinearGradient
-        colors={
-          disabled
-            ? [Colors.textMuted, Colors.textMuted]
-            : [Colors.AuthGradientStart, Colors.AuthGradientEnd] 
-        }
+        colors={colors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[styles.button, disabled && styles.buttonDisabled]}
       >
-        <View style={styles.contentContainer}>
-          {iconName && (
-            <Ionicons
-              name={iconName}
-              size={ms(20)}
-              color={Colors.WhiteColor}
-              style={styles.icon}
-            />
-          )}
-          <Text style={[styles.buttonText, textStyle]}>{title}</Text>
-        </View>
+        <Text style={[styles.buttonText, textStyle]}>{title}</Text>
       </LinearGradient>
     </TouchableOpacity>
   );
 };
 
-export default CustomPrimaryButton;
+export default GlowButton;
 
 const styles = StyleSheet.create({
   wrapper: {
     marginTop: ms(15),
-    borderRadius: horizontalScale(8),
-    overflow: "hidden", 
+    borderRadius: horizontalScale(12),
+    overflow: "hidden",
+    shadowColor: Colors.AuthGradientStart,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   button: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: ms(12),
-    borderRadius: horizontalScale(8),
+    paddingVertical: ms(14),
+    borderRadius: horizontalScale(12),
   },
   buttonDisabled: {
-    opacity: 0.7,
-  },
-  contentContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  icon: {
-    marginRight: ms(8),
+    opacity: 0.5,
   },
   buttonText: {
     color: Colors.WhiteColor,

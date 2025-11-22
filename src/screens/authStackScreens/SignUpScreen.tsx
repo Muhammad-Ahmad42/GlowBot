@@ -6,7 +6,10 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  Platform,
+  StatusBar,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { horizontalScale, ms, textScale } from "../../utils/SizeScalingUtility";
 import {
   Card,
@@ -15,6 +18,7 @@ import {
   CustomLoader,
   CustomPrimaryButton,
   Dropdown,
+  CustomDatePicker,
 } from "../../components";
 import { Formik } from "formik";
 import { verticalScale } from "react-native-size-matters";
@@ -23,7 +27,6 @@ import { useNavigation } from "@react-navigation/native";
 import { SignUpValidationSchema } from "../../utils/ValidationScemas";
 import { useAuthStore } from "../../store/AuthStore";
 
-
 const SignUpScreen = () => {
   const navigation = useNavigation<any>();
   const { signUp, loading } = useAuthStore();
@@ -31,6 +34,7 @@ const SignUpScreen = () => {
     visible: false,
     message: "",
   });
+
   const handleSignUp = async (values: any, setSubmitting: any) => {
     try {
       await signUp(values.name, values.email, values.password);
@@ -44,125 +48,157 @@ const SignUpScreen = () => {
     }
   };
 
+  const calculateAge = (date: Date) => {
+    const today = new Date();
+    let age = today.getFullYear() - date.getFullYear();
+    const m = today.getMonth() - date.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   return (
-    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
-      <ScrollView>
-        <View style={styles.container}>
-          <Text style={styles.heading}>GlowBot</Text>
-          <Text style={styles.subHeading}>Your AI-Powered Skin Expert</Text>
-          <Text style={styles.subtitle}>
-            Join us and start your glow journey
-          </Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1 }}
+    >
+      <LinearGradient
+        colors={[Colors.AuthBackgroundStart, Colors.AuthBackgroundEnd]}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={styles.container}>
+            <StatusBar barStyle="dark-content" />
+            <Text style={styles.heading}>GlowBot</Text>
+            <Text style={styles.subHeading}>Your AI-Powered Skin Expert</Text>
+            <Text style={styles.subtitle}>
+              Join us and start your glow journey
+            </Text>
 
-          <Card style={styles.switchCardBackground}>
-            <View style={styles.switchContainer}>
-              <TouchableOpacity
-                style={styles.switchCard}
-                onPress={() =>
-                  navigation.navigate("LoginScreen")
-                }
+            <Card style={styles.switchCardBackground}>
+              <View style={styles.switchContainer}>
+                <TouchableOpacity
+                  style={styles.switchCard}
+                  onPress={() => navigation.navigate("LoginScreen")}
+                >
+                  <Text style={styles.switchText}>Login</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.switchCard, styles.activeCard]}>
+                  <Text style={styles.switchTextActive}>Sign Up</Text>
+                </TouchableOpacity>
+              </View>
+            </Card>
+
+            <Card style={styles.formCard}>
+              <Formik
+                initialValues={{
+                  name: "",
+                  gender: "",
+                  age: "",
+                  dob: null,
+                  email: "",
+                  password: "",
+                  confirmPassword: "",
+                }}
+                validationSchema={SignUpValidationSchema}
+                onSubmit={(values, { setSubmitting }) => {
+                  handleSignUp(values, setSubmitting);
+                }}
               >
-                <Text style={styles.switchText}>Login</Text>
-              </TouchableOpacity>
+                {(formikProps) => {
+                  return (
+                    <View>
+                      <CustomInput
+                        label="Name"
+                        placeholder="Enter your Name"
+                        formikProps={formikProps}
+                        formikKey="name"
+                      />
 
-              <TouchableOpacity style={[styles.switchCard, styles.activeCard]}>
-                <Text style={styles.switchTextActive}>Sign Up</Text>
-              </TouchableOpacity>
-            </View>
-          </Card>
-
-          <Card style={styles.formCard}>
-            <Formik
-              initialValues={{
-                name: "",
-                gender: "",
-                age: "",
-                email: "",
-                password: "",
-                confirmPassword: "",
-              }}
-              validationSchema={SignUpValidationSchema}
-              onSubmit={(values, { setSubmitting }) => {
-                handleSignUp(values, setSubmitting);
-              }}
-            >
-              {(formikProps) => {
-                return (
-                  <View>
-                    <CustomInput
-                      label="Name"
-                      placeholder="Enter your Name"
-                      formikProps={formikProps}
-                      formikKey="name"
-                    />
-
-                    <Dropdown
-                      label="Gender"
-                      placeholder="Select Gender"
-                      options={["Male", "Female", "Other"]}
-                      selectedValue={formikProps.values.gender}
-                      onSelect={(value) =>
-                        formikProps.setFieldValue("gender", value)
-                      }
-                    />
-                    <CustomInput
-                      label="Age"
-                      placeholder="Enter your Age"
-                      formikProps={formikProps}
-                      formikKey="age"
-                      keyboardType="numeric"
-                    />
-
-                    <CustomInput
-                      label="Email"
-                      placeholder="Enter your email"
-                      formikProps={formikProps}
-                      formikKey="email"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
-
-                    <CustomInput
-                      label="Password"
-                      placeholder="Enter your Password"
-                      formikProps={formikProps}
-                      formikKey="password"
-                      secureTextEntry
-                    />
-
-                    <CustomInput
-                      label="Confirm Password"
-                      placeholder="Confirm your Password"
-                      formikProps={formikProps}
-                      formikKey="confirmPassword"
-                      secureTextEntry
-                    />
-
-                    <CustomPrimaryButton
-                      title="Create Account"
-                      iconName="person-add-outline"
-                      onPress={formikProps.handleSubmit as any}
-                    />
-
-                    <View style={styles.footer}>
-                      <Text style={styles.footerText}>
-                        Already have an account?
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() =>
-                          navigation.navigate("LoginScreen")
+                      <Dropdown
+                        label="Gender"
+                        placeholder="Select Gender"
+                        options={["Male", "Female", "Other"]}
+                        selectedValue={formikProps.values.gender}
+                        onSelect={(value) =>
+                          formikProps.setFieldValue("gender", value)
                         }
-                      >
-                        <Text style={styles.footerLink}> Login</Text>
-                      </TouchableOpacity>
+                        error={
+                          formikProps.touched.gender &&
+                          formikProps.errors.gender
+                            ? (formikProps.errors.gender as string)
+                            : undefined
+                        }
+                      />
+
+                      <CustomDatePicker
+                        label="Date of Birth"
+                        value={formikProps.values.dob}
+                        onDateChange={(date) => {
+                          formikProps.setFieldValue("dob", date);
+                          const age = calculateAge(date);
+                          formikProps.setFieldValue("age", age);
+                        }}
+                        error={
+                          (formikProps.touched.dob && formikProps.errors.dob) ||
+                          (formikProps.touched.age && formikProps.errors.age)
+                            ? ((formikProps.errors.dob ||
+                                formikProps.errors.age) as string)
+                            : undefined
+                        }
+                      />
+
+                      <CustomInput
+                        label="Email"
+                        placeholder="Enter your email"
+                        formikProps={formikProps}
+                        formikKey="email"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                      />
+
+                      <CustomInput
+                        label="Password"
+                        placeholder="Enter your Password"
+                        formikProps={formikProps}
+                        formikKey="password"
+                        secureTextEntry
+                      />
+
+                      <CustomInput
+                        label="Confirm Password"
+                        placeholder="Confirm your Password"
+                        formikProps={formikProps}
+                        formikKey="confirmPassword"
+                        secureTextEntry
+                      />
+
+                      <CustomPrimaryButton
+                        title="Create Account"
+                        iconName="person-add-outline"
+                        onPress={formikProps.handleSubmit as any}
+                      />
+
+                      <View style={styles.footer}>
+                        <Text style={styles.footerText}>
+                          Already have an account?
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => navigation.navigate("LoginScreen")}
+                        >
+                          <Text style={styles.footerLink}> Login</Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                  </View>
-                );
-              }}
-            </Formik>
-          </Card>
-        </View>
-      </ScrollView>
+                  );
+                }}
+              </Formik>
+            </Card>
+          </View>
+        </ScrollView>
+      </LinearGradient>
       {loading && <CustomLoader visible={loading} />}
       <CustomErrorModal
         visible={errorNotification.visible}
@@ -180,15 +216,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.backgroundPrimary,
     paddingHorizontal: horizontalScale(20),
+    paddingVertical: verticalScale(20),
   },
   heading: {
-    fontSize: textScale(30),
-    fontWeight: "900",
+    fontSize: textScale(32),
+    fontWeight: "800",
     color: Colors.textPrimary,
-    marginBottom: verticalScale(8),
-    marginTop: verticalScale(50),
+    marginBottom: verticalScale(5),
+    marginTop: verticalScale(30),
+    letterSpacing: 0.5,
   },
   subHeading: {
     fontSize: textScale(18),
@@ -205,9 +242,9 @@ const styles = StyleSheet.create({
 
   switchCardBackground: {
     width: "100%",
-    backgroundColor: Colors.WhiteColor,
-    borderRadius: ms(15),
-    padding: ms(10),
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: ms(30),
+    padding: ms(5),
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -223,14 +260,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: verticalScale(12),
-    borderRadius: ms(10),
+    paddingVertical: verticalScale(10),
+    borderRadius: ms(25),
     backgroundColor: Colors.WhiteColor,
     marginHorizontal: horizontalScale(5),
     elevation: 2,
   },
   activeCard: {
-    backgroundColor: Colors.BlackColor,
+    backgroundColor: Colors.PrimaryButtonBackgroundColor,
+    shadowColor: Colors.PrimaryButtonBackgroundColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
   },
   switchText: {
     fontSize: textScale(15),
@@ -245,8 +287,8 @@ const styles = StyleSheet.create({
   formCard: {
     width: "100%",
     backgroundColor: Colors.WhiteColor,
-    borderRadius: ms(12),
-    padding: ms(20),
+    borderRadius: ms(20),
+    padding: ms(25),
     elevation: 5,
     marginBottom: verticalScale(40),
   },

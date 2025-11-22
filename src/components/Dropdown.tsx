@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import {
   ms,
   verticalScale,
@@ -15,6 +15,7 @@ interface DropdownProps {
   selectedValue: string;
   placeholder?: string;
   onSelect: (value: string) => void;
+  error?: string;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -23,6 +24,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   selectedValue,
   placeholder = "Select",
   onSelect,
+  error,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -31,7 +33,11 @@ const Dropdown: React.FC<DropdownProps> = ({
       <Text style={styles.label}>{label}</Text>
 
       <TouchableOpacity
-        style={[styles.dropdownField, open && styles.dropdownFocused]}
+        style={[
+          styles.dropdownField,
+          open && styles.dropdownFocused,
+          error ? styles.dropdownError : null,
+        ]}
         onPress={() => setOpen(!open)}
         activeOpacity={0.8}
       >
@@ -39,40 +45,43 @@ const Dropdown: React.FC<DropdownProps> = ({
         <Ionicons
           name={open ? "chevron-up-outline" : "chevron-down-outline"}
           size={ms(18)}
-          color={Colors.DarkTextColor}
+          color={open ? Colors.PrimaryButtonBackgroundColor : Colors.DarkTextColor}
         />
       </TouchableOpacity>
 
       {open && (
         <View style={styles.dropdownModal}>
-          {options.map((option) => {
-            const isSelected = selectedValue === option;
-            return (
-              <TouchableOpacity
-                key={option}
-                style={[
-                  styles.dropdownItem,
-                  isSelected && styles.dropdownSelected,
-                ]}
-                onPress={() => {
-                  onSelect(option);
-                  setOpen(false);
-                }}
-              >
-                <Text style={styles.textValue}>{option}</Text>
+          <ScrollView nestedScrollEnabled style={{ maxHeight: verticalScale(150) }}>
+            {options.map((option) => {
+              const isSelected = selectedValue === option;
+              return (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    styles.dropdownItem,
+                    isSelected && styles.dropdownSelected,
+                  ]}
+                  onPress={() => {
+                    onSelect(option);
+                    setOpen(false);
+                  }}
+                >
+                  <Text style={styles.textValue}>{option}</Text>
 
-                {isSelected && (
-                  <Ionicons
-                    name="checkmark-outline"
-                    size={ms(18)}
-                    color={Colors.PrimaryButtonBackgroundColor}
-                  />
-                )}
-              </TouchableOpacity>
-            );
-          })}
+                  {isSelected && (
+                    <Ionicons
+                      name="checkmark-outline"
+                      size={ms(18)}
+                      color={Colors.PrimaryButtonBackgroundColor}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
       )}
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 };
@@ -109,7 +118,17 @@ const styles = StyleSheet.create({
     shadowOpacity: ms(2),
     shadowRadius: horizontalScale(2),
     elevation: ms(4),
-    borderColor: Colors.textPrimary,
+    borderColor: Colors.PrimaryButtonBackgroundColor,
+  },
+
+  dropdownError: {
+    borderColor: "red",
+  },
+
+  errorText: {
+    color: "red",
+    fontSize: textScale(12),
+    marginTop: verticalScale(5),
   },
 
   dropdownModal: {

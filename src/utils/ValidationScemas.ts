@@ -28,7 +28,14 @@ export const SignUpValidationSchema = Yup.object().shape({
     .required("Please confirm your password *"),
 
   gender: Yup.string().required("Gender is required"),
-  age: Yup.string().required("Age is required *"),
+  age: Yup.number()
+    .typeError("Age must be a number")
+    .positive("Age must be positive")
+    .integer("Age must be an integer")
+    .min(15, "You must be at least 15 years old")
+    .max(120, "Enter a valid age")
+    .required("Age is required *"),
+  dob: Yup.date().required("Date of Birth is required").nullable(),
 });
 
 export const ForgotPasswordSchema = Yup.object().shape({

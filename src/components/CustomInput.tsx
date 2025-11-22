@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     shadowOpacity: ms(2),
     shadowRadius: horizontalScale(2),
     elevation: ms(4),
-    borderColor: Colors.textPrimary,
+    borderColor: Colors.PrimaryButtonBackgroundColor,
   },
   input: {
     flex: 1,

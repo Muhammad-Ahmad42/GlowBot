@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import { Header, SafeScreen } from "../../components";
+import { Header, SafeScreen } from "@/src/components";
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons";
 import {
   horizontalScale,

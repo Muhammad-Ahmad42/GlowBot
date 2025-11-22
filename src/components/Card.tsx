@@ -7,6 +7,7 @@ import {
 import {
   ms,
   horizontalScale,
+  verticalScale,
 } from "../utils/SizeScalingUtility";
 import Colors from "../utils/Colors";
 
@@ -28,11 +29,20 @@ const { width } = Dimensions.get("window");
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.backgroundPrimary,
-    borderRadius: horizontalScale(12),         
-    padding: ms(15),              
+    borderRadius: ms(30),         
+    padding: ms(20),              
     width: width - horizontalScale(25), 
     alignSelf: "center",
-    elevation: ms(5),
+    elevation: ms(1),
+    marginBottom: verticalScale(20),
+    shadowColor: Colors.textSecondary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    
   },
 });
 
