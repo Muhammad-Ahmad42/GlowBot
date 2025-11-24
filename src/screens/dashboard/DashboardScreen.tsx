@@ -12,16 +12,22 @@ import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuthStore } from "../../store/AuthStore";
+import { useDashboardStore } from "../../store/DashboardStore";
 import drawable from "../../utils/drawable";
 import { useNavigation } from "@react-navigation/native";
 import { DietTipSection, ExpertSection, LatestSkinScanSection, StressLevelSection } from "./Sections";
 import { Header, SafeScreen, Tabs } from "@/src/components";
 
 
+
+
 function DashboardScreen() {
   const { user } = useAuthStore();
+  const { latestScan, stressLevel, dietTip, experts } = useDashboardStore();
     const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState("Skin");
+
+  const availableExpert = experts.find((e) => e.available) || experts[0];
 
   const tabs = [
     { name: "Skin", icon: "happy-outline" },
@@ -49,7 +55,7 @@ function DashboardScreen() {
           containerStyle={{ paddingHorizontal: 0 }}
         />
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
           <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
           {/* Skin Scan Card - Full Width */}
@@ -77,39 +83,34 @@ function DashboardScreen() {
           </TouchableOpacity>
 
           {/* Latest Skin Scan Section */}
+          {/* Latest Skin Scan Section */}
+          {/* Latest Skin Scan Section */}
           <LatestSkinScanSection
-          latestScanTime="2 hours ago"
-          acneStatus="Good"
-          dullnessStatus="Fair"
-          pigmentationStatus="Needs Care"
-        />
+            latestScanTime={latestScan.time}
+            skinAnalysis={latestScan.skinAnalysis}
+          />
 
-         <StressLevelSection
-          currentLevel="Low"
-          progressPercent={50}
-          connected={true}
-          onViewHistory={() => navigation.navigate("StressHistory")}
-         />
+          <StressLevelSection
+            value={stressLevel.value}
+            connected={stressLevel.connected}
+            onViewHistory={() => navigation.navigate("StressHistory")}
+          />
         <DietTipSection
-          title="Diet Tip of the Day"
-          mainTip="Boost Vitamin C"
-          description="Add citrus fruits to your breakfast for brighter, more radiant skin."
-          mainIcon="carrot"
-          items={[
-             { name: "Lemon", icon: "fruit-citrus", color: "#FDD835" },
-             { name: "Orange", icon: "fruit-cherries", color: "#FF9800" },
-             { name: "Kiwi", icon: "leaf", color: "#4CAF50" },
-          ]}
+          title={dietTip.title}
+          mainTip={dietTip.mainTip}
+          description={dietTip.description}
+          category={dietTip.category}
+          items={dietTip.items}
           onPressButton={() => navigation.navigate("DietPlan")}
         />
 
 
           {/* Expert Section */}
       <ExpertSection
-        expertName="Dr. Emma Wilson"
-        subtitle="Get personalized advice for your pigmentation concerns."
+        expertName={availableExpert.name}
+        subtitle={availableExpert.description}
         buttonTitle="Book Consultation"
-        online={true}
+        online={availableExpert.available}
         onPressButton={() => navigation.navigate("ExpertBooking")}
       />
 

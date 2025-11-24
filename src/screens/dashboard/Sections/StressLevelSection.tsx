@@ -6,18 +6,24 @@ import { Ionicons } from "@expo/vector-icons";
 import GlowButton from "@/src/components/GlowButton";
 
 interface Props {
-  currentLevel: string;
-  progressPercent: number; // 0 to 100
+  value: number; // 0 to 100
   connected?: boolean;
   onViewHistory?: () => void;
 }
 
 const StressLevelSection: React.FC<Props> = ({
-  currentLevel,
-  progressPercent,
+  value,
   connected = true,
   onViewHistory = () => {},
 }) => {
+  const getStressLevel = (val: number) => {
+    if (val < 30) return "Low";
+    if (val <= 70) return "Medium";
+    return "High";
+  };
+
+  const currentLevel = getStressLevel(value);
+
   return (
     <View style={styles.sectionContainer}>
       <View style={styles.sectionHeader}>
@@ -45,7 +51,7 @@ const StressLevelSection: React.FC<Props> = ({
       </View>
 
       <View style={styles.progressBarBackground}>
-        <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+        <View style={[styles.progressBarFill, { width: `${value}%` }]} />
       </View>
 
       <Text style={styles.infoText}>

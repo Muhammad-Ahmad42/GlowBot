@@ -15,8 +15,9 @@ const HelpSupportScreen = () => {
           heading="Help & Support"
           showBackButton={true}
           onBackPress={() => navigation.goBack()}
+          centerTitle={true}
         />
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
           <Card style={styles.contentCard}>
             <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
             

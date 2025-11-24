@@ -9,18 +9,17 @@ import { StyleSheet, Text, View } from "react-native";
 
 interface Props {
   latestScanTime: string;
-  acneStatus: "Good" | "Fair" | "Needs Care";
-  dullnessStatus: "Good" | "Fair" | "Needs Care";
-  pigmentationStatus: "Good" | "Fair" | "Needs Care";
+  skinAnalysis: Record<string, number>;
 }
 
-const LatestSkinScanSection: React.FC<Props> = ({
-  latestScanTime,
-  acneStatus,
-  dullnessStatus,
-  pigmentationStatus,
-}) => {
+const LatestSkinScanSection: React.FC<Props> = ({ latestScanTime, skinAnalysis }) => {
   const navigation = useNavigation<any>();
+
+  const getStatus = (value: number) => {
+    if (value < 30) return "Good";
+    if (value <= 60) return "Fair";
+    return "Needs Care";
+  };
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -49,11 +48,10 @@ const LatestSkinScanSection: React.FC<Props> = ({
     }
   };
 
-  const items = [
-    { label: "Acne", value: acneStatus },
-    { label: "Dullness", value: dullnessStatus },
-    { label: "Pigmentation", value: pigmentationStatus },
-  ];
+  const items = Object.entries(skinAnalysis).map(([key, value]) => ({
+    label: key,
+    value: getStatus(value),
+  }));
 
   return (
     <Card>

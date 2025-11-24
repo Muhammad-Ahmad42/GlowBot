@@ -6,6 +6,8 @@ import Feather from "@expo/vector-icons/Feather";
 import { StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
+import Colors from "../utils/Colors";
+import { LinearGradient } from "expo-linear-gradient";
 
 import {
   LoginScreen,
@@ -22,6 +24,9 @@ import {
   HelpSupportScreen,
   PrivacyPolicyScreen,
   TermsConditionsScreen,
+  AllProductsScreen,
+  WeeklyScanScreen,
+  RemindersScreen,
 } from "../screens";
 import { RootStackParamList } from "../types/navigation";
 import { useAuthStore } from "../store/AuthStore";
@@ -63,6 +68,9 @@ const DashboardStackNavigator = () => (
 const ReportStackNavigator = () => (
   <ReportStack.Navigator screenOptions={{ headerShown: false }}>
     <ReportStack.Screen name="ReportScreen" component={ReportScreen} />
+    <ReportStack.Screen name="AllProducts" component={AllProductsScreen} />
+    <ReportStack.Screen name="WeeklyScan" component={WeeklyScanScreen} />
+    <ReportStack.Screen name="Reminders" component={RemindersScreen} />
   </ReportStack.Navigator>
 );
 
@@ -84,21 +92,13 @@ const ProfileStackNavigator = () => (
   </ProfileStack.Navigator>
 );
 
-/* ---------------------- COLORS ---------------------- */
-const COLORS = {
-  tabActiveBg: "#fd6060ff",
-  tabInactive: "#fcdcdcff",
-  tabBg: "#ff8d8dff",
-  white: "#ffffffff",
-};
-
 /* ---------------------- BOTTOM TABS ---------------------- */
 const BottomTabs = createBottomTabNavigator();
 
 const tabStyles = StyleSheet.create({
   tabBar: {
     height: 70,
-    backgroundColor: COLORS.tabBg,
+    backgroundColor: Colors.WhiteColor,
     borderTopWidth: 0,
     paddingBottom: 6,
     paddingHorizontal: 10,
@@ -122,11 +122,28 @@ const BottomTabNavigator = () => (
     screenOptions={({ route }) => ({
       headerShown: false,
       tabBarShowLabel: true,
-      tabBarActiveTintColor: COLORS.white,
-      tabBarInactiveTintColor: COLORS.tabInactive,
-      tabBarStyle: tabStyles.tabBar,
+      tabBarActiveTintColor: Colors.WhiteColor,
+      tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
+      tabBarStyle: {
+        ...tabStyles.tabBar,
+        backgroundColor: "transparent",
+        borderTopWidth: 0,
+        elevation: 0,
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+      },
+      tabBarBackground: () => (
+        <LinearGradient
+          colors={[Colors.GradientOrangeStart, Colors.GradientOrangeEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+      ),
       tabBarLabelStyle: tabStyles.label,
-      tabBarActiveBackgroundColor: COLORS.tabActiveBg,
+      tabBarActiveBackgroundColor: "rgba(255, 255, 255, 0.2)",
       tabBarItemStyle: tabStyles.item,
       tabBarIcon: ({ color }) => {
         const iconSize = 24;
@@ -169,7 +186,7 @@ const AppNavigator: React.FC = () => {
   useEffect(() => {
     if (user) {
       NavigationBar.setVisibilityAsync("hidden");
-      NavigationBar.setBehaviorAsync("overlay-swipe");
+      // NavigationBar.setBehaviorAsync("overlay-swipe"); // Not supported with edge-to-edge
     } else {
       NavigationBar.setVisibilityAsync("visible");
     }

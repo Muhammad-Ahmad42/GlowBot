@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
+  StyleProp,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { horizontalScale, ms, textScale } from "../utils/SizeScalingUtility";
@@ -14,7 +15,7 @@ interface GlowButtonProps {
   title: string;
   onPress: () => void;
   disabled?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   textStyle?: TextStyle;
   gradientColors?: readonly [string, string, ...string[]];
 }

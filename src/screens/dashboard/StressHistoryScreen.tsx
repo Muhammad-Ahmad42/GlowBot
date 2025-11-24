@@ -4,6 +4,7 @@ import { SafeScreen, Header, GlowButton, CustomModal } from "@/src/components";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Colors from "../../utils/Colors";
+import { useDashboardStore } from "../../store/DashboardStore";
 import { horizontalScale, ms, textScale, verticalScale } from "../../utils/SizeScalingUtility";
 
 const StressHistoryScreen = () => {
@@ -11,15 +12,16 @@ const StressHistoryScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "", icon: "information-circle" as any });
 
-  const historyData = [
-    { day: "Mon", level: "Low", value: 30, color: Colors.StatusGoodText, details: "Felt relaxed and productive." },
-    { day: "Tue", level: "Med", value: 55, color: Colors.StatusFairText, details: "Some work pressure, but manageable." },
-    { day: "Wed", level: "High", value: 80, color: Colors.StatusBadText, details: "Tight deadlines caused high stress." },
-    { day: "Thu", level: "Low", value: 25, color: Colors.StatusGoodText, details: "Great day, exercised in the morning." },
-    { day: "Fri", level: "Med", value: 60, color: Colors.StatusFairText, details: "Busy end to the week." },
-    { day: "Sat", level: "Low", value: 20, color: Colors.StatusGoodText, details: "Relaxing weekend vibes." },
-    { day: "Sun", level: "Low", value: 15, color: Colors.StatusGoodText, details: "Prepared for the week ahead." },
-  ];
+  const stressHistory = useDashboardStore((state) => state.stressHistory);
+
+  const getStressColor = (level: string) => {
+    switch (level) {
+      case "Low": return Colors.StatusGoodText;
+      case "Med": return Colors.StatusFairText;
+      case "High": return Colors.StatusBadText;
+      default: return Colors.StatusGoodText;
+    }
+  };
 
   const maxBarHeight = verticalScale(150);
 
@@ -59,6 +61,7 @@ const StressHistoryScreen = () => {
           titleStyle={styles.headerTitle}
           showBackButton={true}
           onBackPress={() => navigation.goBack()}
+          centerTitle={true}
         />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -84,7 +87,7 @@ const StressHistoryScreen = () => {
             </View>
             
             <View style={styles.barChartContainer}>
-                {historyData.map((item, index) => (
+                {stressHistory.map((item, index) => (
                     <TouchableOpacity key={index} style={styles.barColumn} onPress={() => handleBarPress(item)}>
                         <View style={styles.barWrapper}>
                             <View 
@@ -92,7 +95,7 @@ const StressHistoryScreen = () => {
                                     styles.bar, 
                                     { 
                                         height: (item.value / 100) * maxBarHeight, 
-                                        backgroundColor: item.color 
+                                        backgroundColor: getStressColor(item.level)
                                     }
                                 ]} 
                             />
@@ -177,7 +180,7 @@ const styles = StyleSheet.create({
       fontSize: textScale(24),
   },
   scrollContent: {
-    paddingBottom: verticalScale(30),
+    paddingBottom: 80,
   },
   chartCard: {
       backgroundColor: Colors.WhiteColor,

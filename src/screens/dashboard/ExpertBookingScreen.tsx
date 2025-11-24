@@ -6,45 +6,11 @@ import { useNavigation } from "@react-navigation/native";
 import Colors from "../../utils/Colors";
 import { horizontalScale, ms, textScale, verticalScale } from "../../utils/SizeScalingUtility";
 import drawable from "../../utils/drawable";
-
-const experts = [
-  {
-    id: "1",
-    name: "Dr. Emma Wilson",
-    specialty: "Dermatologist",
-    rating: 4.9,
-    reviews: 120,
-    image: drawable.reactLogo, 
-    available: true,
-    fee: "$50",
-    description: "Specializes in acne and anti-aging treatments with over 10 years of experience.",
-  },
-  {
-    id: "2",
-    name: "Dr. James Carter",
-    specialty: "Nutritionist",
-    rating: 4.8,
-    reviews: 85,
-    image: drawable.reactLogo, // Placeholder
-    available: false,
-    fee: "$40",
-    description: "Expert in gut health and skin-friendly diets to help you glow from within.",
-  },
-  {
-    id: "3",
-    name: "Dr. Sophia Lee",
-    specialty: "Esthetician",
-    rating: 4.7,
-    reviews: 200,
-    image: drawable.reactLogo, // Placeholder
-    available: true,
-    fee: "$60",
-    description: "Certified esthetician focusing on holistic facial treatments and skincare routines.",
-  },
-];
+import { useDashboardStore, DashboardState } from "../../store/DashboardStore";
 
 const ExpertBookingScreen = () => {
   const navigation = useNavigation();
+  const experts = useDashboardStore((state: DashboardState) => state.experts);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExpert, setSelectedExpert] = useState<any>(null);
@@ -54,15 +20,26 @@ const ExpertBookingScreen = () => {
     expert.specialty.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [connectingExpertId, setConnectingExpertId] = useState<string | null>(null);
+
   const handleExpertPress = (expert: any) => {
     setSelectedExpert(expert);
     setModalVisible(true);
   };
 
+  const handleConnectPress = (expertId: string) => {
+    setConnectingExpertId(expertId);
+    // Simulate connection delay if needed, or just keep the state
+    setTimeout(() => {
+        setConnectingExpertId(null);
+        // Navigate or show success message here if required
+    }, 2000);
+  };
+
   const renderExpertCard = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.card} onPress={() => handleExpertPress(item)}>
       <View style={styles.cardHeader}>
-        <Image source={item.image} style={styles.avatar} />
+        <Image source={drawable.reactLogo} style={styles.avatar} />
         <View style={styles.infoContainer}>
           <Text style={styles.name}>{item.name}</Text>
           <Text style={styles.specialty}>{item.specialty}</Text>
@@ -88,10 +65,12 @@ const ExpertBookingScreen = () => {
         </View>
         <TouchableOpacity 
             style={[styles.bookButton, !item.available && styles.disabledButton]} 
-            disabled={!item.available}
-            onPress={() => handleExpertPress(item)}
+            disabled={!item.available || connectingExpertId === item.id}
+            onPress={() => handleConnectPress(item.id)}
         >
-          <Text style={styles.bookButtonText}>Book Now</Text>
+          <Text style={styles.bookButtonText}>
+            {connectingExpertId === item.id ? "Connecting..." : "Connect"}
+          </Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -106,6 +85,7 @@ const ExpertBookingScreen = () => {
           titleStyle={styles.headerTitle}
           showBackButton={true}
           onBackPress={() => navigation.goBack()}
+          centerTitle={true}
         />
 
         <View style={styles.searchBar}>
@@ -140,7 +120,7 @@ const ExpertBookingScreen = () => {
           data={filteredExperts}
           renderItem={renderExpertCard}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{ paddingBottom: 80 }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
               <View style={styles.emptyContainer}>
@@ -167,6 +147,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.DashboardBackground,
     paddingHorizontal: horizontalScale(20),
+    paddingBottom: verticalScale(40),
   },
   headerTitle: {
       fontSize: textScale(24),

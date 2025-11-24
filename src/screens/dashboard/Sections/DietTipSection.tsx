@@ -5,18 +5,22 @@ import { ms, textScale, verticalScale } from "@/src/utils/SizeScalingUtility";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import GlowButton from "@/src/components/GlowButton";
 
-interface DietItem {
-  name: string;
-  icon: string;
-  color: string;
-}
+const DIET_ITEMS_CONFIG: Record<string, { icon: string; color: string }> = {
+  Lemon: { icon: "fruit-citrus", color: "#FDD835" },
+  Orange: { icon: "fruit-cherries", color: "#FF9800" },
+  Kiwi: { icon: "leaf", color: "#4CAF50" },
+};
+
+const CATEGORY_CONFIG: Record<string, string> = {
+  Nutrition: "carrot",
+};
 
 interface Props {
   title: string;
   mainTip: string;
   description: string;
-  mainIcon: string;
-  items: DietItem[];
+  category: string;
+  items: string[];
   onPressButton?: () => void;
 }
 
@@ -24,7 +28,7 @@ const DietTipSection: React.FC<Props> = ({
   title,
   mainTip,
   description,
-  mainIcon,
+  category,
   items,
   onPressButton = () => {},
 }) => {
@@ -37,7 +41,11 @@ const DietTipSection: React.FC<Props> = ({
 
       <View style={styles.mainTipRow}>
         <View style={styles.mainIconContainer}>
-          <MaterialCommunityIcons name={mainIcon as any} size={30} color={Colors.DietButton} />
+          <MaterialCommunityIcons
+            name={CATEGORY_CONFIG[category] as any || "food-apple"}
+            size={30}
+            color={Colors.DietButton}
+          />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.mainTipTitle}>{mainTip}</Text>
@@ -46,17 +54,20 @@ const DietTipSection: React.FC<Props> = ({
       </View>
 
       <View style={styles.itemsRow}>
-        {items.map((item, index) => (
-          <View key={index} style={styles.itemContainer}>
-            <MaterialCommunityIcons
-              name={item.icon as any}
-              size={20}
-              color={item.color}
-              style={{ marginBottom: 5 }}
-            />
-            <Text style={styles.itemText}>{item.name}</Text>
-          </View>
-        ))}
+        {items.map((itemName, index) => {
+          const config = DIET_ITEMS_CONFIG[itemName] || { icon: "food", color: Colors.textSecondary };
+          return (
+            <View key={index} style={styles.itemContainer}>
+              <MaterialCommunityIcons
+                name={config.icon as any}
+                size={20}
+                color={config.color}
+                style={{ marginBottom: 5 }}
+              />
+              <Text style={styles.itemText}>{itemName}</Text>
+            </View>
+          );
+        })}
       </View>
 
       <GlowButton

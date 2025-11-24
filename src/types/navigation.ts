@@ -14,4 +14,7 @@ export type RootStackParamList = {
     HelpSupport: undefined;
     PrivacyPolicy: undefined;
     TermsConditions: undefined;
+    AllProducts: { filter?: string } | undefined;
+    WeeklyScan: undefined;
+    Reminders: undefined;
 };

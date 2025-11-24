@@ -104,6 +104,7 @@ const PersonalInformationScreen = () => {
           subTitle="Update your profile details"
           showBackButton={true}
           onBackPress={() => navigation.goBack()}
+          centerTitle={true}
         />
 
         <ScrollView
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: horizontalScale(20),
   },
   scrollContent: {
-    paddingBottom: verticalScale(30),
+    paddingBottom: 80,
   },
   card: {
     marginTop: verticalScale(10),

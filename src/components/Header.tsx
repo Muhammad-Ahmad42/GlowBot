@@ -22,6 +22,7 @@ interface HeaderProps {
   children?: React.ReactNode;
   showBackButton?: boolean;
   onBackPress?: () => void;
+  centerTitle?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -36,12 +37,13 @@ const Header: React.FC<HeaderProps> = ({
   children,
   showBackButton,
   onBackPress,
+  centerTitle = false,
 }) => {
   const imageSource = typeof avatarUri === 'string' ? { uri: avatarUri } : avatarUri;
 
   return (
     <View style={[styles.headerContainer, containerStyle]}>
-      <View style={styles.leftContainer}>
+      <View style={[styles.leftContainer, centerTitle && styles.leftContainerCentered]}>
         {showBackButton ? (
           <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
@@ -54,28 +56,44 @@ const Header: React.FC<HeaderProps> = ({
             />
           )
         )}
-        <View style={styles.textContainer}>
-          {heading && (
-            <View style={styles.headingRow}>
-              <Text style={[styles.heading, titleStyle]}>{heading}</Text>
+        {!centerTitle && (
+            <View style={styles.textContainer}>
+            {heading && (
+                <View style={styles.headingRow}>
+                <Text style={[styles.heading, titleStyle]}>{heading}</Text>
+                </View>
+            )}
+            {subTitle && (
+                <Text style={[styles.subTitle, subtitleStyle]}>{subTitle}</Text>
+            )}
+            {children}
             </View>
-          )}
-          {subTitle && (
-            <Text style={[styles.subTitle, subtitleStyle]}>{subTitle}</Text>
-          )}
-          {children}
-        </View>
+        )}
       </View>
 
-      {rightIcon && (
-        <TouchableOpacity
-          style={styles.rightIconContainer}
-          onPress={onRightIconPress}
-          activeOpacity={0.7}
-        >
-          {rightIcon}
-        </TouchableOpacity>
+      {centerTitle && (
+          <View style={styles.centerContainer}>
+            {heading && (
+                <Text style={[styles.heading, styles.centerHeading, titleStyle]} numberOfLines={1}>{heading}</Text>
+            )}
+            {subTitle && (
+                <Text style={[styles.subTitle, styles.centerSubTitle, subtitleStyle]} numberOfLines={1}>{subTitle}</Text>
+            )}
+            {children}
+          </View>
       )}
+
+      <View style={styles.rightContainer}>
+        {rightIcon && (
+            <TouchableOpacity
+            style={styles.rightIconContainer}
+            onPress={onRightIconPress}
+            activeOpacity={0.7}
+            >
+            {rightIcon}
+            </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };
@@ -89,12 +107,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: verticalScale(10),
     marginBottom: verticalScale(25),
-    paddingHorizontal: horizontalScale(20),
   },
   leftContainer: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+  },
+  leftContainerCentered: {
+      flex: 0,
+      marginRight: horizontalScale(10),
+  },
+  centerContainer: {
+      flex: 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+  },
+  rightContainer: {
+      flex: 1,
+      alignItems: 'flex-end',
+      justifyContent: 'center',
   },
   avatar: {
     width: ms(50),
@@ -111,13 +142,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   heading: {
-    fontSize: textScale(18),
+    fontSize: textScale(20),
     fontWeight: "bold",
     color: Colors.textPrimary,
   },
+  centerHeading: {
+      textAlign: 'center',
+  },
   subTitle: {
-    fontSize: textScale(14),
+    fontSize: textScale(12),
     color: Colors.textSecondary,
+  },
+  centerSubTitle: {
+      textAlign: 'center',
   },
   rightIconContainer: {
     justifyContent: "center",

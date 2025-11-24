@@ -30,6 +30,7 @@ const TermsConditionsScreen = () => {
           subTitle="Please read carefully"
           showBackButton={true}
           onBackPress={() => navigation.goBack()}
+          centerTitle={true}
         />
         <ScrollView 
           showsVerticalScrollIndicator={false}
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: horizontalScale(20),
   },
   scrollContent: {
-    paddingBottom: verticalScale(30),
+    paddingBottom: 80,
   },
   contentCard: {
     marginTop: verticalScale(10),

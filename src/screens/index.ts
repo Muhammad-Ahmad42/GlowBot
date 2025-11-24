@@ -11,6 +11,9 @@ import DietPlanScreen from "./dashboard/DietPlanScreen";
 import StressHistoryScreen from "./dashboard/StressHistoryScreen";
 import HelpSupportScreen from "./profile/HelpSupportScreen";
 import PrivacyPolicyScreen from "./profile/PrivacyPolicyScreen";
+import AllProductsScreen from "./report/AllProductsScreen";
+import WeeklyScanScreen from "./report/WeeklyScanScreen";
+import RemindersScreen from "./report/RemindersScreen";
 import TermsConditionsScreen from "./profile/TermsConditionsScreen";
 
 export {
@@ -27,5 +30,8 @@ export {
     StressHistoryScreen,
     HelpSupportScreen,
     PrivacyPolicyScreen,
-    TermsConditionsScreen
+    TermsConditionsScreen,
+    AllProductsScreen,
+    WeeklyScanScreen,
+    RemindersScreen
 };

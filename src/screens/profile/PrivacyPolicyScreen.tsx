@@ -15,8 +15,9 @@ const PrivacyPolicyScreen = () => {
           heading="Privacy Policy"
           showBackButton={true}
           onBackPress={() => navigation.goBack()}
+          centerTitle={true}
         />
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
           <Card style={styles.contentCard}>
             <Text style={styles.text}>
               Last updated: November 2025

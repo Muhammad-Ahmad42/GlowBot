@@ -6,6 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 import Colors from "../../utils/Colors";
 import { horizontalScale, ms, textScale, verticalScale } from "../../utils/SizeScalingUtility";
 import { LinearGradient } from "expo-linear-gradient";
+import { useDashboardStore } from "../../store/DashboardStore";
 
 const DietPlanScreen = () => {
   const navigation = useNavigation();
@@ -13,44 +14,17 @@ const DietPlanScreen = () => {
   const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [customizeModalVisible, setCustomizeModalVisible] = useState(false);
 
-  const meals = [
-    {
-      type: "Breakfast",
-      time: "8:00 AM",
-      name: "Oatmeal with Berries",
-      calories: "350 kcal",
-      icon: "food-croissant",
-      color: "#FFCC80",
-      details: "Ingredients: Oats, Blueberries, Strawberries, Almond Milk, Honey.\n\nBenefits: High in fiber and antioxidants.",
-    },
-    {
-      type: "Lunch",
-      time: "1:00 PM",
-      name: "Grilled Chicken Salad",
-      calories: "450 kcal",
-      icon: "food-drumstick",
-      color: "#A5D6A7",
-      details: "Ingredients: Chicken Breast, Lettuce, Tomatoes, Cucumber, Olive Oil.\n\nBenefits: Lean protein and essential vitamins.",
-    },
-    {
-      type: "Snack",
-      time: "4:00 PM",
-      name: "Greek Yogurt & Nuts",
-      calories: "200 kcal",
-      icon: "food-apple",
-      color: "#FFF59D",
-      details: "Ingredients: Greek Yogurt, Walnuts, Honey.\n\nBenefits: Probiotics and healthy fats.",
-    },
-    {
-      type: "Dinner",
-      time: "7:30 PM",
-      name: "Baked Salmon & Veggies",
-      calories: "500 kcal",
-      icon: "fish",
-      color: "#90CAF9",
-      details: "Ingredients: Salmon Fillet, Asparagus, Lemon, Garlic.\n\nBenefits: Omega-3 fatty acids for skin health.",
-    },
-  ];
+  const dietPlan = useDashboardStore((state) => state.dietPlan);
+
+  const getMealConfig = (type: string) => {
+    switch (type) {
+      case "Breakfast": return { icon: "food-croissant", color: "#FFCC80" };
+      case "Lunch": return { icon: "food-drumstick", color: "#A5D6A7" };
+      case "Snack": return { icon: "food-apple", color: "#FFF59D" };
+      case "Dinner": return { icon: "fish", color: "#90CAF9" };
+      default: return { icon: "food", color: "#E0E0E0" };
+    }
+  };
 
   const handleMealPress = (meal: any) => {
     setSelectedMeal(meal);
@@ -68,6 +42,7 @@ const DietPlanScreen = () => {
           titleStyle={styles.headerTitle}
           showBackButton={true}
           onBackPress={() => navigation.goBack()}
+          centerTitle={true}
         />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -94,10 +69,10 @@ const DietPlanScreen = () => {
 
           <Text style={styles.sectionTitle}>Today's Meals</Text>
 
-          {meals.map((meal, index) => (
+          {dietPlan.map((meal, index) => (
             <TouchableOpacity key={index} style={styles.mealCard} onPress={() => handleMealPress(meal)}>
-              <View style={[styles.iconContainer, { backgroundColor: meal.color }]}>
-                <MaterialCommunityIcons name={meal.icon as any} size={24} color={Colors.textPrimary} />
+              <View style={[styles.iconContainer, { backgroundColor: getMealConfig(meal.type).color }]}>
+                <MaterialCommunityIcons name={getMealConfig(meal.type).icon as any} size={24} color={Colors.textPrimary} />
               </View>
               <View style={styles.mealInfo}>
                 <Text style={styles.mealType}>{meal.type}</Text>
@@ -158,7 +133,7 @@ const styles = StyleSheet.create({
       fontSize: textScale(24),
   },
   scrollContent: {
-    paddingBottom: verticalScale(30),
+    paddingBottom: 80,
   },
   summaryCard: {
     borderRadius: ms(20),
