@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { SafeScreen, Header, CustomLoader } from "@/src/components";
+import { SafeScreen, Header, CustomLoader, ScoreCard, MealCard, FoodCategoryCard } from "../../components";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { horizontalScale, ms, textScale, verticalScale } from "../../utils/SizeScalingUtility";
@@ -11,67 +11,7 @@ import { useProductStore } from "../../store/ProductStore";
 import { useAuthStore } from "../../store/AuthStore";
 import { useDietStore } from "../../store/DietStore";
 import { RootStackParamList } from "../../types/navigation";
-
-// Type definition for route props
 type ScanResultRouteProp = RouteProp<RootStackParamList, "ScanResult">;
-
-// ScoreCard component for displaying overall skin health score
-const ScoreCard = ({ overallScore, skinAnalysis }: { overallScore: number; skinAnalysis: any }) => (
-  <LinearGradient
-    colors={['#EC4899', '#8B5CF6']}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    style={styles.scoreCard}
-  >
-    <View style={styles.scoreCircle}>
-      <Text style={styles.scoreValue}>{overallScore || 0}</Text>
-      <Text style={styles.scoreLabel}>Score</Text>
-    </View>
-    <View style={styles.metricsRow}>
-      <View style={styles.metricItem}>
-        <Text style={styles.metricLabel}>Hydration</Text>
-        <Text style={styles.metricValue}>{skinAnalysis?.Hydration ?? 0}%</Text>
-      </View>
-      <View style={styles.metricItem}>
-        <Text style={styles.metricLabel}>Acne</Text>
-        <Text style={styles.metricValue}>{skinAnalysis?.Acne ?? 0}%</Text>
-      </View>
-      <View style={styles.metricItem}>
-        <Text style={styles.metricLabel}>Dullness</Text>
-        <Text style={styles.metricValue}>{skinAnalysis?.Dullness ?? 0}%</Text>
-      </View>
-    </View>
-  </LinearGradient>
-);
-
-// MealCard component for displaying individual meal items
-const MealCard = ({ meal, icon, color }: { meal: any; icon: string; color: string }) => (
-  <View style={styles.mealCard}>
-    <View style={[styles.mealIcon, { backgroundColor: color }]}>
-      <MaterialCommunityIcons name={icon as any} size={28} color={Colors.textPrimary} />
-    </View>
-    <View style={styles.mealContent}>
-      <View style={styles.mealHeader}>
-        <Text style={styles.mealType}>{meal.type}</Text>
-      </View>
-      <Text style={styles.mealTime}>{meal.time}</Text>
-      <View style={styles.mealDetails}>
-        <Text style={styles.mealName} numberOfLines={1}>{meal.name}</Text>
-        {meal.calories && <Text style={styles.nutrientTag}>{meal.calories}</Text>}
-      </View>
-    </View>
-  </View>
-);
-
-// FoodCategoryCard component for displaying food category recommendations
-const FoodCategoryCard = ({ category }: { category: any }) => (
-  <View style={[styles.foodCard, { backgroundColor: category.color }]}>
-    <MaterialCommunityIcons name={category.icon as any} size={24} color="white" />
-    <Text style={styles.foodTitle}>{category.title}</Text>
-    <Text style={styles.foodItems}>{category.items}</Text>
-  </View>
-);
-
 const ScanResultScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<ScanResultRouteProp>();
@@ -107,55 +47,11 @@ const ScanResultScreen = () => {
     }
   };
 
-  const getMealIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      Breakfast: "food-croissant",
-      Lunch: "food-drumstick",
-      Snack: "food-apple",
-      Dinner: "fish",
-    };
-    return icons[type] || "food";
-  };
-
-  const getMealColor = (type: string) => {
-    const colors: Record<string, string> = {
-      Breakfast: "#FFE5B4",
-      Lunch: "#B4E5FF",
-      Snack: "#FFF5B4",
-      Dinner: "#E5B4FF",
-    };
-    return colors[type] || "#E0E0E0";
-  };
+  // Icon and color now come from backend data (meal.icon, meal.color)
 
   const meals = activePlan?.meals || [];
   const displayMeals = meals.slice(0, 4);
 
-  const foodCategories = [
-    {
-      icon: "fish",
-      title: "Omega-3\nRich",
-      items: "Salmon, walnuts,\nchia seeds",
-      color: "rgba(255, 255, 255, 0.15)"
-    },
-    {
-      icon: "leaf",
-      title: "Antioxidants",
-      items: "Berries, green tea,\nspinach",
-      color: "rgba(255, 255, 255, 0.15)"
-    },
-    {
-      icon: "water",
-      title: "Hydrating",
-      items: "Cucumber,\nwatermelon,\ntomatoes",
-      color: "rgba(255, 255, 255, 0.15)"
-    },
-    {
-      icon: "carrot",
-      title: "Vitamin A",
-      items: "Carrots, sweet\npotato, kale",
-      color: "rgba(255,255, 255, 0.15)"
-    }
-  ];
 
   if (loading) {
     return (
@@ -226,8 +122,8 @@ const ScanResultScreen = () => {
               <MealCard
                 key={index}
                 meal={meal}
-                icon={getMealIcon(meal.type)}
-                color={getMealColor(meal.type)}
+                icon={meal.icon}
+                color={meal.color}
               />
             ))
           )}
@@ -246,9 +142,15 @@ const ScanResultScreen = () => {
             </View>
 
             <View style={styles.foodsGrid}>
-              {(activePlan?.foodCategories || foodCategories).map((category: any, index: number) => (
-                <FoodCategoryCard key={index} category={category} />
-              ))}
+              {(!activePlan?.foodCategories || activePlan.foodCategories.length === 0) ? (
+                 <Text style={{color: 'white', textAlign: 'center', width: '100%', marginTop: 10}}>
+                   Generating food recommendations...
+                 </Text>
+              ) : (
+                activePlan.foodCategories.map((category: any, index: number) => (
+                  <FoodCategoryCard key={index} category={category} />
+                ))
+              )}
             </View>
           </LinearGradient>
 
@@ -263,13 +165,12 @@ const ScanResultScreen = () => {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productsScroll}>
                 {userRoutine.filter((p: any) => p.status === 'Wishlist').map((product: any, index: number) => (
                   <View key={index} style={styles.productCard}>
-                    <View style={styles.productIcon}>
-                      <MaterialCommunityIcons name="bottle-tonic" size={32} color={Colors.ButtonPink} />
+                    <View style={styles.productIconContainer}>
+                       <MaterialCommunityIcons name="bottle-tonic-plus-outline" size={24} color={Colors.ButtonPink} />
                     </View>
-                    <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
-                    <Text style={styles.productCategory}>{product.category}</Text>
-                    <View style={styles.productTag}>
-                       <Text style={styles.productTagText}>Recommended</Text>
+                    <View style={styles.productInfo}>
+                      <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
+                      <Text style={styles.productCategory}>{product.category}</Text>
                     </View>
                   </View>
                 ))}
@@ -279,7 +180,9 @@ const ScanResultScreen = () => {
 
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => navigation.navigate("DietPlan")}
+            onPress={() => {
+              navigation.navigate("Home", { screen: "DietPlan" });
+            }}
           >
             <LinearGradient
               colors={[Colors.GradientOrangeStart, Colors.GradientOrangeEnd]}
@@ -353,48 +256,7 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(4),
     textAlign: "center",
   },
-  scoreCard: {
-    borderRadius: ms(20),
-    padding: ms(20),
-    marginBottom: verticalScale(25),
-    elevation: 4,
-  },
-  scoreCircle: {
-    width: ms(100),
-    height: ms(100),
-    borderRadius: ms(50),
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "center",
-    marginBottom: verticalScale(15),
-  },
-  scoreValue: {
-    fontSize: textScale(36),
-    fontWeight: "bold",
-    color: "white",
-  },
-  scoreLabel: {
-    fontSize: textScale(12),
-    color: "rgba(255, 255, 255, 0.9)",
-  },
-  metricsRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-  },
-  metricItem: {
-    alignItems: "center",
-  },
-  metricLabel: {
-    fontSize: textScale(12),
-    color: "rgba(255, 255, 255, 0.9)",
-    marginBottom: verticalScale(4),
-  },
-  metricValue: {
-    fontSize: textScale(18),
-    fontWeight: "bold",
-    color: "white",
-  },
+
   sectionTitle: {
     fontSize: textScale(20),
     fontWeight: "bold",
@@ -406,60 +268,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: verticalScale(8),
   },
-  mealCard: {
-    flexDirection: "row",
-    backgroundColor: "white",
-    borderRadius: ms(16),
-    padding: ms(16),
-    marginBottom: verticalScale(12),
-    elevation: 2,
-  },
-  mealIcon: {
-    width: ms(64),
-    height: ms(64),
-    borderRadius: ms(16),
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: horizontalScale(12),
-  },
-  mealContent: {
-    flex: 1,
-  },
-  mealHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: verticalScale(4),
-  },
-  mealType: {
-    fontSize: textScale(18),
-    fontWeight: "bold",
-    color: Colors.textPrimary,
-  },
-  mealTime: {
-    fontSize: textScale(13),
-    color: Colors.textSecondary,
-    marginBottom: verticalScale(8),
-  },
-  mealDetails: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  mealName: {
-    fontSize: textScale(14),
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  nutrientTag: {
-    fontSize: textScale(11),
-    color: Colors.ButtonPink,
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
-    paddingHorizontal: horizontalScale(8),
-    paddingVertical: verticalScale(4),
-    borderRadius: ms(8),
-    maxWidth: "30%",
-  },
+
   foodsSection: {
     borderRadius: ms(20),
     padding: ms(20),
@@ -490,24 +299,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
-  foodCard: {
-    width: "48%",
-    padding: ms(12),
-    borderRadius: ms(12),
-    marginBottom: verticalScale(12),
-  },
-  foodTitle: {
-    fontSize: textScale(13),
-    fontWeight: "600",
-    color: "white",
-    marginTop: verticalScale(8),
-    marginBottom: verticalScale(4),
-  },
-  foodItems: {
-    fontSize: textScale(11),
-    color: "rgba(255, 255, 255, 0.9)",
-    lineHeight: textScale(15),
-  },
+
   actionButton: {
     borderRadius: ms(12),
     overflow: "hidden",
@@ -533,45 +325,41 @@ const styles = StyleSheet.create({
   },
   productCard: {
     backgroundColor: "white",
-    borderRadius: ms(16),
-    padding: ms(12),
-    marginRight: horizontalScale(12),
-    width: ms(140),
-    elevation: 2,
-    alignItems: "center",
-  },
-  productIcon: {
-    width: ms(48),
-    height: ms(48),
     borderRadius: ms(12),
-    backgroundColor: "rgba(236, 72, 153, 0.1)",
+    marginRight: horizontalScale(12),
+    width: ms(130),
+    padding: ms(10),
+    elevation: 2,
+    shadowColor: Colors.ButtonPink,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    borderWidth: 1,
+    borderColor: "rgba(255, 64, 129, 0.08)",
+  },
+  productIconContainer: {
+    width: ms(36),
+    height: ms(36),
+    borderRadius: ms(10),
+    backgroundColor: "rgba(255, 64, 129, 0.08)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: verticalScale(8),
   },
+  productInfo: {
+    flex: 1,
+  },
   productName: {
-    fontSize: textScale(13),
+    fontSize: textScale(12),
     fontWeight: "600",
     color: Colors.textPrimary,
-    textAlign: "center",
-    marginBottom: verticalScale(4),
-    height: verticalScale(36),
+    marginBottom: verticalScale(2),
+    height: verticalScale(32),
   },
   productCategory: {
-    fontSize: textScale(11),
-    color: Colors.textSecondary,
-    marginBottom: verticalScale(8),
-  },
-  productTag: {
-    backgroundColor: Colors.ButtonPink,
-    paddingHorizontal: horizontalScale(8),
-    paddingVertical: verticalScale(2),
-    borderRadius: ms(4),
-  },
-  productTagText: {
-    color: "white",
     fontSize: textScale(10),
-    fontWeight: "bold",
+    color: Colors.textSecondary,
+    marginBottom: verticalScale(4),
   },
 });
 

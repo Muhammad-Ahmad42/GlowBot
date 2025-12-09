@@ -29,11 +29,12 @@ const ExpertBookingScreen = () => {
 
   const handleConnectPress = (expertId: string) => {
     setConnectingExpertId(expertId);
-    // Simulate connection delay if needed, or just keep the state
+    // Simulate API call for booking request
     setTimeout(() => {
         setConnectingExpertId(null);
-        // Navigate or show success message here if required
-    }, 2000);
+        setModalVisible(true);
+        setSelectedExpert(experts.find(e => e.id === expertId));
+    }, 1500);
   };
 
   const renderExpertCard = ({ item }: { item: any }) => (
@@ -132,9 +133,16 @@ const ExpertBookingScreen = () => {
         <CustomModal
             visible={modalVisible}
             title={selectedExpert?.name || "Expert Details"}
-            message={selectedExpert ? `${selectedExpert.specialty}\n\n${selectedExpert.description}\n\nFee: ${selectedExpert.fee}` : ""}
+            message={
+              selectedExpert 
+              ? connectingExpertId === null && modalVisible 
+                ? `Booking request sent to ${selectedExpert.name}!\n\nThey will contact you shortly.`
+                : `${selectedExpert.specialty}\n\n${selectedExpert.description}\n\nFee: ${selectedExpert.fee}`
+              : ""
+            }
             onClose={() => setModalVisible(false)}
-            iconName="person"
+            iconName="checkmark-circle"
+            iconColor={Colors.StatusGoodText}
             buttonText="Close"
         />
       </View>
@@ -168,11 +176,7 @@ const styles = StyleSheet.create({
       color: Colors.textPrimary,
       fontSize: textScale(14),
   },
-  searchText: { // Kept for compatibility if needed, but replaced by TextInput
-      marginLeft: horizontalScale(10),
-      color: Colors.textMuted,
-      fontSize: textScale(14),
-  },
+
   filterContainer: {
       marginBottom: verticalScale(20),
       height: verticalScale(40),

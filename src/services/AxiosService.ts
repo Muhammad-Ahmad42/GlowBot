@@ -1,7 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { BASE_URL } from '../res/api';
 
-// Axios instance with base configuration
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
@@ -10,7 +9,6 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// GET request
 const getRequest = async <T = any>(endpoint: string, params?: object): Promise<T> => {
   try {
     const response: AxiosResponse<T> = await api.get(endpoint, { params });
@@ -21,7 +19,6 @@ const getRequest = async <T = any>(endpoint: string, params?: object): Promise<T
   }
 };
 
-// POST request
 const postRequest = async <T = any>(endpoint: string, payload: object, headers?: object): Promise<T> => {
   try {
     const config: any = {};
@@ -29,12 +26,9 @@ const postRequest = async <T = any>(endpoint: string, payload: object, headers?:
     if (headers) {
       config.headers = { ...headers };
     }
-    
-    // For FormData, let axios set Content-Type with boundary automatically
-    if (payload instanceof FormData && config.headers) {
+        if (payload instanceof FormData && config.headers) {
       delete config.headers['Content-Type'];
     }
-    
     const response: AxiosResponse<T> = await api.post(endpoint, payload, config);
     return response.data;
   } catch (error) {
@@ -43,7 +37,6 @@ const postRequest = async <T = any>(endpoint: string, payload: object, headers?:
   }
 };
 
-// PATCH request
 const patchRequest = async <T = any>(endpoint: string, payload: object): Promise<T> => {
   try {
     const response: AxiosResponse<T> = await api.patch(endpoint, payload);
@@ -54,7 +47,6 @@ const patchRequest = async <T = any>(endpoint: string, payload: object): Promise
   }
 };
 
-// PUT request
 const putRequest = async <T = any>(endpoint: string, payload: object): Promise<T> => {
   try {
     const response: AxiosResponse<T> = await api.put(endpoint, payload);
@@ -65,7 +57,6 @@ const putRequest = async <T = any>(endpoint: string, payload: object): Promise<T
   }
 };
 
-// DELETE request
 const deleteRequest = async <T = any>(endpoint: string): Promise<T> => {
   try {
     const response: AxiosResponse<T> = await api.delete(endpoint);
@@ -78,7 +69,6 @@ const deleteRequest = async <T = any>(endpoint: string): Promise<T> => {
 
 export { getRequest, postRequest, patchRequest, putRequest, deleteRequest };
 
-// Default export for backward compatibility
 export default {
   get: getRequest,
   post: postRequest,

@@ -91,7 +91,12 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     try {
       const response = await fetch(`${BASE_URL}/experts`);
       const data = await response.json();
-      set({ experts: data });
+      // Map _id to id for frontend consumption
+      const formattedData = data.map((expert: any) => ({
+        ...expert,
+        id: expert._id || expert.id
+      }));
+      set({ experts: formattedData });
     } catch (error) {
       console.error("Failed to fetch experts:", error);
     }
@@ -101,10 +106,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     try {
       const response = await fetch(`${BASE_URL}/diet-plan?userId=${userId}`);
       const data = await response.json();
-      // Backend returns array, take the first one or empty
-      set({ dietPlan: data.length > 0 ? data[0].meals : [] });
-      
-      // Also update diet tip if available in the plan
+      set({ dietPlan: data.length > 0 ? data[0].meals : [] });   
       if (data.length > 0 && data[0].tip) {
          set({ dietTip: data[0].tip });
       }

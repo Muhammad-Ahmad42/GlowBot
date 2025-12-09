@@ -13,9 +13,8 @@ interface ReportState {
     reviews: number;
     category: string;
   }[];
-  addedProducts: string[]; // Store IDs of added products
-  scanHistory: any[]; // Store history of scans
-  // Actions
+  addedProducts: string[]; 
+  scanHistory: any[];
   setOverallScore: (score: number) => void;
   setSkinAnalysis: (analysis: ReportState["skinAnalysis"]) => void;
   setRecommendedProducts: (products: ReportState["recommendedProducts"]) => void;
@@ -46,7 +45,6 @@ export const useReportStore = create<ReportState>((set) => ({
   addedProducts: [],
   addProduct: async (productId, userId = 'anonymous') => {
     try {
-      // Add to backend
       const response = await fetch(`${BASE_URL}/user-products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,7 +65,6 @@ export const useReportStore = create<ReportState>((set) => ({
   },
   removeProduct: async (productId, userId = 'anonymous') => {
     try {
-      // Find the UserProduct entry to delete
       const response = await fetch(`${BASE_URL}/user-products?userId=${userId}`);
       const userProducts = await response.json();
       const userProduct = userProducts.find((up: any) => 
@@ -108,7 +105,6 @@ export const useReportStore = create<ReportState>((set) => ({
       if (Array.isArray(scans) && scans.length > 0) {
         const latest = scans[0];
         
-        // 2. Update store with analysis
         set({ 
           overallScore: latest.analysis.overall_score,
           skinAnalysis: latest.analysis 
@@ -121,28 +117,37 @@ export const useReportStore = create<ReportState>((set) => ({
             // Find the personalized plan related to this scan or the latest one
             const latestPlan = dietPlans.find((p: any) => p.planType === 'personalized') || dietPlans[0];
 
-            if (latestPlan && latestPlan.products && latestPlan.products.length > 0) {
+            if (latestPlan && latestPlan.recommendedProductIds && latestPlan.recommendedProductIds.length > 0) {
+                 const dbProducts = latestPlan.recommendedProductIds.map((p: any) => ({
+                    id: p._id || p.id,
+                    name: p.name,
+                    description: p.description || p.reason || "Recommended for you",
+                    rating: p.rating || 4.8,
+                    reviews: p.reviews || 100,
+                    category: p.category || "Treatment" // Fallback
+                }));
+                set({ recommendedProducts: dbProducts });
+            } else if (latestPlan && latestPlan.products && latestPlan.products.length > 0) {
+                // Fallback to AI text components if DB products not found
                 const aiProducts = latestPlan.products.map((p: any, index: number) => ({
                     id: `ai-${index}`,
                     name: p.name,
                     description: p.reason,
-                    rating: 4.8, // Default high rating for AI picks
-                    reviews: 100, // Placeholder
+                    rating: 4.8, 
+                    reviews: 100, 
                     category: p.type
                 }));
                 set({ recommendedProducts: aiProducts });
             } else {
-                // Fallback to all products if no AI products found
                 const recResponse = await fetch(`${BASE_URL}/products`);
                 const allProducts = await recResponse.json();
                 set({ recommendedProducts: allProducts });
             }
         } catch (dietError) {
             console.error("Failed to fetch diet plan for products:", dietError);
-             // Fallback
-             const recResponse = await fetch(`${BASE_URL}/products`);
-             const allProducts = await recResponse.json();
-             set({ recommendedProducts: allProducts });
+            const recResponse = await fetch(`${BASE_URL}/products`);
+            const allProducts = await recResponse.json();
+            set({ recommendedProducts: allProducts });
         }
       }
     } catch (error) {

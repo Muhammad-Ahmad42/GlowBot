@@ -39,7 +39,6 @@ const ScanScreen = () => {
 
   const handleScanPress = async () => {
     try {
-      // Check permissions
       if (!permission?.granted) {
         const { granted } = await requestPermission();
         if (!granted) {
@@ -51,7 +50,6 @@ const ScanScreen = () => {
         }
       }
 
-      // Launch Camera
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
@@ -67,14 +65,11 @@ const ScanScreen = () => {
           const userId = user?.uid || "anonymous";
           await analyzeSkin(imageUri, userId);
           setIsLoading(false);
-          // Refresh history after new scan
           if (user?.uid) fetchScanHistory(user.uid);
-          // Navigate to Scan Result Screen
           navigation.navigate("ScanResult");
         } catch (error: any) {
           setIsLoading(false);
           
-          // Provide specific error messages based on backend response
           let errorTitle = "Analysis Failed";
           let errorMessage = "Could not analyze the image. Please try again.";
           
@@ -132,7 +127,6 @@ const ScanScreen = () => {
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
 
-          {/* Scan Tips */}
           <View style={styles.tipsContainer}>
             <View style={styles.tipsHeader}>
               <MaterialCommunityIcons name="lightbulb-on" size={18} color="#FBC02D" />
@@ -160,7 +154,6 @@ const ScanScreen = () => {
             </View>
           </View>
 
-          {/* Main Action: Shutter Button */}
           <View style={styles.actionContainer}>
             <TouchableOpacity
               style={styles.shutterButton}
@@ -178,17 +171,14 @@ const ScanScreen = () => {
             <Text style={styles.actionText}>Tap to Start Scan</Text>
           </View>
 
-          {/* Recent Scans */}
           <RecentScansSection 
             scans={scanHistory} 
             onViewAllPress={() => navigation.navigate("AllScans")}
             onScanPress={(scan) => {
-                // Could navigate to report details or show a modal
                 console.log("Scan pressed:", scan._id);
             }}
           />
 
-          {/* Premium Banner */}
           <LinearGradient
             colors={[Colors.GradientOrangeStart, Colors.GradientOrangeEnd]}
             start={{ x: 0, y: 0 }}

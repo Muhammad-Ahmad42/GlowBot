@@ -120,12 +120,12 @@ const AllProductsScreen = () => {
               <Text style={styles.emptyText}>No products found.</Text>
             </View>
           ) : (
-            displayedProducts.map((item) => {
+            displayedProducts.map((item, index) => {
               const isAdded = addedProducts?.includes(item.id);
               const uiConfig = CATEGORY_UI_CONFIG[item.category] || CATEGORY_UI_CONFIG["Moisturizer"];
               
               return (
-                <Card key={item.id} style={styles.productCard}>
+                <Card key={item.id || `product-${index}`} style={styles.productCard}>
                   <View style={[styles.productImageContainer, { backgroundColor: uiConfig.imageBg }]}>
                     {renderIcon(item.category)}
                   </View>

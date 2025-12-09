@@ -6,6 +6,8 @@ export interface DietMeal {
   name: string;
   calories: string;
   details: string;
+  icon?: string;
+  color?: string;
 }
 
 export interface DietTip {
@@ -33,7 +35,6 @@ export interface DietPlan {
 }
 
 export const DietService = {
-  // Fetch all diet plans for a user
   async fetchDietPlans(userId: string): Promise<DietPlan[]> {
     try {
       const response = await fetch(`${BASE_URL}/diet-plan?userId=${userId}`);
@@ -47,7 +48,6 @@ export const DietService = {
     }
   },
 
-  // Create a new diet plan
   async createDietPlan(plan: Omit<DietPlan, '_id' | 'createdAt'>): Promise<DietPlan> {
     try {
       const response = await fetch(`${BASE_URL}/diet-plan`, {
@@ -63,7 +63,6 @@ export const DietService = {
     }
   },
 
-  // Update an existing diet plan
   async updateDietPlan(planId: string, updates: Partial<DietPlan>): Promise<DietPlan> {
     try {
       const response = await fetch(`${BASE_URL}/diet-plan/${planId}`, {
@@ -79,7 +78,6 @@ export const DietService = {
     }
   },
 
-  // Delete a diet plan
   async deleteDietPlan(planId: string): Promise<void> {
     try {
       const response = await fetch(`${BASE_URL}/diet-plan/${planId}`, {
@@ -92,7 +90,6 @@ export const DietService = {
     }
   },
 
-  // Update a specific meal in a plan
   async updateMeal(planId: string, mealIndex: number, meal: DietMeal): Promise<DietPlan> {
     try {
       const response = await fetch(`${BASE_URL}/diet-plan/${planId}`, {

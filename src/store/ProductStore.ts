@@ -33,7 +33,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const userProducts = await ProductService.getUserProducts(userId);
-      // Extract the actual product details from the UserProduct wrapper
       const products = userProducts.map((up: any) => ({
         ...up.productId,
         userProductId: up._id,

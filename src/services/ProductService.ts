@@ -28,8 +28,6 @@ export const ProductService = {
   },
 
   getRoutine: async (): Promise<Product[]> => {
-    // This would typically fetch from a user-specific endpoint
-    // For now, we'll simulate it or use a placeholder if the backend isn't ready
     return []; 
   },
 

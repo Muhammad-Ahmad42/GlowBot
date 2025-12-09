@@ -4,16 +4,7 @@ import Colors from "@/src/utils/Colors";
 import { ms, textScale, verticalScale } from "@/src/utils/SizeScalingUtility";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import GlowButton from "@/src/components/GlowButton";
-
-const DIET_ITEMS_CONFIG: Record<string, { icon: string; color: string }> = {
-  Lemon: { icon: "fruit-citrus", color: "#FDD835" },
-  Orange: { icon: "fruit-cherries", color: "#FF9800" },
-  Kiwi: { icon: "leaf", color: "#4CAF50" },
-};
-
-const CATEGORY_CONFIG: Record<string, string> = {
-  Nutrition: "carrot",
-};
+import { DIET_ITEMS_CONFIG, CATEGORY_CONFIG, getDietItemConfig } from "@/src/store/DietStore";
 
 interface Props {
   title: string;
@@ -55,7 +46,7 @@ const DietTipSection: React.FC<Props> = ({
 
       <View style={styles.itemsRow}>
         {items.slice(0, 3).map((itemName, index) => {
-          const config = DIET_ITEMS_CONFIG[itemName] || { icon: "food", color: Colors.textSecondary };
+          const config = getDietItemConfig(itemName);
           return (
             <View key={index} style={styles.itemContainer}>
               <MaterialCommunityIcons

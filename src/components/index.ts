@@ -14,6 +14,11 @@ import CustomModal from "./CustomModal";
 import ProfileInput from "./ProfileInput";
 import ProfileImagePicker from "./ProfileImagePicker";
 
+import ScoreCard from "./ScoreCard";
+import MealCard from "./MealCard";
+import FoodCategoryCard from "./FoodCategoryCard";
+import NotificationPanel from "./NotificationPanel";
+
 export {
   Header,
   SafeScreen,
@@ -30,4 +35,8 @@ export {
   CustomModal,
   ProfileInput,
   ProfileImagePicker,
+  ScoreCard,
+  MealCard,
+  FoodCategoryCard,
+  NotificationPanel,
 };

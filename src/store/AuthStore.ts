@@ -14,7 +14,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
-  signUp: (name: string, email: string, password: string, photoURL?: string | null) => Promise<void>;
+  signUp: (name: string, email: string, password: string, photoURL?: string | null, profile?: any) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setUser: (user) => set({ user }),
 
-  signUp: async (name, email, password, photoURL) => {
+  signUp: async (name, email, password, photoURL, profile) => {
     try {
       set({ loading: true, error: null });
 
@@ -41,6 +41,30 @@ export const useAuthStore = create<AuthState>((set) => ({
         displayName: name,
         photoURL: photoURL || null,
       });
+
+      // Sync user to backend
+      try {
+        const response = await fetch('http://192.168.100.204:5501/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            firebaseUid: userCredential.user.uid,
+            email: email,
+            displayName: name,
+            photoURL: photoURL || null,
+            profile: profile || {},
+          }),
+        });
+
+        if (!response.ok) {
+          console.warn('Failed to sync user to backend:', await response.text());
+        }
+      } catch (syncError) {
+        console.error('Error syncing user to backend:', syncError);
+        // Continue even if sync fails, user is created in Firebase
+      }
 
       set({ user: userCredential.user });
     } catch (error: any) {

@@ -48,4 +48,6 @@ export interface DietMeal {
   name: string;
   calories: string;
   details: string;
+  icon?: string;
+  color?: string;
 }

@@ -136,13 +136,46 @@ const SignUpScreen = () => {
                   email: "",
                   password: "",
                   confirmPassword: "",
+                  allergies: [] as string[],
+                  customAllergy: "",
                 }}
                 validationSchema={SignUpValidationSchema}
                 onSubmit={(values, { setSubmitting }) => {
-                  handleSignUp(values, setSubmitting);
+                  const profileData = {
+                    age: values.age,
+                    gender: values.gender,
+                    dob: values.dob,
+                    allergies: values.allergies,
+                  };
+                  handleSignUp({ ...values, profile: profileData }, setSubmitting);
                 }}
               >
                 {(formikProps) => {
+                  const toggleAllergy = (allergy: string) => {
+                    const currentAllergies = formikProps.values.allergies;
+                    if (currentAllergies.includes(allergy)) {
+                      formikProps.setFieldValue(
+                        "allergies",
+                        currentAllergies.filter((a) => a !== allergy)
+                      );
+                    } else {
+                      formikProps.setFieldValue("allergies", [...currentAllergies, allergy]);
+                    }
+                  };
+
+                  const addCustomAllergy = () => {
+                    if (formikProps.values.customAllergy.trim()) {
+                      const newAllergy = formikProps.values.customAllergy.trim();
+                      if (!formikProps.values.allergies.includes(newAllergy)) {
+                        formikProps.setFieldValue("allergies", [
+                          ...formikProps.values.allergies,
+                          newAllergy,
+                        ]);
+                        formikProps.setFieldValue("customAllergy", "");
+                      }
+                    }
+                  };
+
                   return (
                     <View>
                       <CustomInput
@@ -167,6 +200,58 @@ const SignUpScreen = () => {
                             : undefined
                         }
                       />
+
+                      <Text style={styles.label}>Allergies (Optional)</Text>
+                      <View style={styles.chipContainer}>
+                        {["Dairy", "Nuts", "Gluten", "Shellfish", "Eggs", "Soy", "Wheat"].map((allergy) => (
+                          <TouchableOpacity
+                            key={allergy}
+                            style={[
+                              styles.chip,
+                              formikProps.values.allergies.includes(allergy) && styles.activeChip,
+                            ]}
+                            onPress={() => toggleAllergy(allergy)}
+                          >
+                            <Text
+                              style={[
+                                styles.chipText,
+                                formikProps.values.allergies.includes(allergy) && styles.activeChipText,
+                              ]}
+                            >
+                              {allergy}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+
+                      {formikProps.values.allergies.length > 0 && (
+                        <View style={styles.selectedAllergiesContainer}>
+                          <Text style={styles.selectedLabel}>Selected:</Text>
+                          <View style={styles.chipContainer}>
+                            {formikProps.values.allergies.map((allergy) => (
+                              <TouchableOpacity
+                                key={allergy}
+                                style={[styles.chip, styles.activeChip]}
+                                onPress={() => toggleAllergy(allergy)}
+                              >
+                                <Text style={styles.activeChipText}>{allergy} ✕</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+
+                      <View style={styles.customAllergyContainer}>
+                        <CustomInput
+                          label="Other Allergy"
+                          placeholder="Type and press add"
+                          formikProps={formikProps}
+                          formikKey="customAllergy"
+                        />
+                        <TouchableOpacity style={styles.addButton} onPress={addCustomAllergy}>
+                          <Text style={styles.addButtonText}>Add</Text>
+                        </TouchableOpacity>
+                      </View>
 
                       <CustomDatePicker
                         label="Date of Birth"
@@ -381,5 +466,72 @@ const styles = StyleSheet.create({
     fontSize: textScale(13),
     color: Colors.PrimaryButtonBackgroundColor,
     fontWeight: "700",
+  },
+  label: {
+    fontSize: textScale(14),
+    fontWeight: "600",
+    color: Colors.textPrimary,
+    marginBottom: verticalScale(8),
+    marginTop: verticalScale(10),
+  },
+  chipContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: verticalScale(15),
+  },
+  chip: {
+    paddingHorizontal: horizontalScale(12),
+    paddingVertical: verticalScale(8),
+    borderRadius: ms(20),
+    backgroundColor: "#F5F5F5",
+    marginRight: horizontalScale(8),
+    marginBottom: verticalScale(8),
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  activeChip: {
+    backgroundColor: Colors.ButtonPink + "20",
+    borderColor: Colors.ButtonPink,
+  },
+  chipText: {
+    fontSize: textScale(13),
+    color: Colors.textSecondary,
+  },
+  activeChipText: {
+    color: Colors.ButtonPink,
+    fontWeight: "600",
+  },
+  selectedAllergiesContainer: {
+    marginBottom: verticalScale(15),
+    padding: ms(10),
+    backgroundColor: "#FAFAFA",
+    borderRadius: ms(10),
+    borderWidth: 1,
+    borderColor: "#EEEEEE",
+  },
+  selectedLabel: {
+    fontSize: textScale(12),
+    color: Colors.textMuted,
+    marginBottom: verticalScale(8),
+  },
+  customAllergyContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginBottom: verticalScale(15),
+  },
+  addButton: {
+    backgroundColor: Colors.ButtonPink,
+    paddingHorizontal: horizontalScale(15),
+    paddingVertical: verticalScale(10),
+    borderRadius: ms(10),
+    marginLeft: horizontalScale(10),
+    marginBottom: verticalScale(15), // Align with input
+    height: verticalScale(45), // Match input height roughly
+    justifyContent: "center",
+  },
+  addButtonText: {
+    color: Colors.WhiteColor,
+    fontWeight: "600",
+    fontSize: textScale(14),
   },
 });

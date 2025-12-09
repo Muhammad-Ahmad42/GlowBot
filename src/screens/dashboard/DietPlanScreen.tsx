@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native";
-import { SafeScreen, Header, CustomModal } from "@/src/components";
+import { SafeScreen, Header, CustomModal, MealCard } from "@/src/components";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Colors from "../../utils/Colors";
 import { horizontalScale, ms, textScale, verticalScale } from "../../utils/SizeScalingUtility";
 import { LinearGradient } from "expo-linear-gradient";
 import { useDietStore } from "../../store/DietStore";
+import { useReportStore } from "../../store/ReportStore";
 import { useAuthStore } from "../../store/AuthStore";
-import { DietMeal } from "../../services/DietService";
+import { DietMeal } from "@/src/types/DashboardDataTypes";
 
 const DietPlanScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuthStore();
   const { plans, activePlan, loading, fetchPlans, updateMeal, setActivePlan } = useDietStore();
+  const { skinAnalysis } = useReportStore();
   
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -28,20 +30,45 @@ const DietPlanScreen = () => {
     details: ""
   });
 
+  const calculateDailyGoals = () => {
+    let waterGoal = 2.0;
+    let message = "You're doing great! Keep it up.";
+    let calorieGoal = 2000;
+
+    // Default values if no analysis
+    if (!skinAnalysis) return { waterGoal, message, calorieGoal };
+
+    // Hydration Logic
+    if ((skinAnalysis.Hydration || 0) < 50) {
+        waterGoal += 0.5;
+        message = "Hydration is low! Boost your water intake.";
+    }
+
+    // Acne Logic
+    if ((skinAnalysis.Acne || 0) > 50) {
+        waterGoal += 0.5; // Flush toxins
+        if (message === "You're doing great! Keep it up.") {
+            message = "Stay hydrated to help clear your skin.";
+        }
+    }
+    
+    // Dullness Logic
+    if ((skinAnalysis.Dullness || 0) > 50 && message === "You're doing great! Keep it up.") {
+         message = "Eat colorful fruits for that glow!";
+    }
+
+    return { waterGoal, message, calorieGoal };
+  };
+
+  const { waterGoal, message, calorieGoal } = calculateDailyGoals();
+
+
   useEffect(() => {
     const userId = user?.uid || "TEST_USER_123";
     fetchPlans(userId);
   }, []);
 
-  const getMealConfig = (type: string) => {
-    switch (type) {
-      case "Breakfast": return { icon: "food-croissant", color: "#FFCC80" };
-      case "Lunch": return { icon: "food-drumstick", color: "#A5D6A7" };
-      case "Snack": return { icon: "food-apple", color: "#FFF59D" };
-      case "Dinner": return { icon: "fish", color: "#90CAF9" };
-      default: return { icon: "food", color: "#E0E0E0" };
-    }
-  };
+  // Icon and color now come from backend data (meal.icon, meal.color)
 
   const handleMealPress = (meal: DietMeal) => {
     setSelectedMeal(meal);
@@ -109,15 +136,15 @@ const DietPlanScreen = () => {
           >
             <View>
               <Text style={styles.summaryTitle}>Today's Goal</Text>
-              <Text style={styles.summaryValue}>1500 / 2000 kcal</Text>
+              <Text style={styles.summaryValue}>{`1500 / ${calorieGoal} kcal`}</Text>
               <View style={styles.progressBarContainer}>
                 <View style={styles.progressBarFill} />
               </View>
-              <Text style={styles.summarySubtitle}>You're doing great! Keep it up.</Text>
+              <Text style={styles.summarySubtitle}>{message}</Text>
             </View>
             <View style={styles.waterContainer}>
               <MaterialCommunityIcons name="water" size={24} color="white" />
-              <Text style={styles.waterText}>1.5L</Text>
+              <Text style={styles.waterText}>{`${waterGoal}L`}</Text>
             </View>
           </LinearGradient>
 
@@ -129,22 +156,21 @@ const DietPlanScreen = () => {
             <Text style={styles.emptyText}>No meals in this plan</Text>
           ) : (
             meals.map((meal, index) => (
-              <TouchableOpacity key={index} style={styles.mealCard} onPress={() => handleMealPress(meal)}>
-                <View style={[styles.iconContainer, { backgroundColor: getMealConfig(meal.type).color }]}>
-                  <MaterialCommunityIcons name={getMealConfig(meal.type).icon as any} size={24} color={Colors.textPrimary} />
-                </View>
-                <View style={styles.mealInfo}>
-                  <Text style={styles.mealType}>{meal.type}</Text>
-                  <Text style={styles.mealName}>{meal.name}</Text>
-                  <Text style={styles.mealTime}>{meal.time}</Text>
-                </View>
-                <View style={styles.caloriesContainer}>
-                  <Text style={styles.caloriesText}>{meal.calories}</Text>
-                  <TouchableOpacity onPress={() => handleEditPress(meal, index)}>
-                    <Ionicons name="create-outline" size={24} color={Colors.ButtonPink} />
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
+              <MealCard
+                key={index}
+                meal={meal}
+                icon={meal.icon!}
+                color={meal.color!}
+                onPress={() => handleMealPress(meal)}
+                RightComponent={
+                  <View style={styles.caloriesContainer}>
+                    <Text style={styles.caloriesText}>{meal.calories}</Text>
+                    <TouchableOpacity onPress={() => handleEditPress(meal, index)}>
+                      <Ionicons name="create-outline" size={24} color={Colors.ButtonPink} />
+                    </TouchableOpacity>
+                  </View>
+                }
+              />
             ))
           )}
 
@@ -325,41 +351,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: verticalScale(20),
   },
-  mealCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.WhiteColor,
-    borderRadius: ms(16),
-    padding: ms(15),
-    marginBottom: verticalScale(15),
-    elevation: 2,
-  },
-  iconContainer: {
-    width: ms(50),
-    height: ms(50),
-    borderRadius: ms(12),
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: horizontalScale(15),
-  },
-  mealInfo: {
-    flex: 1,
-  },
-  mealType: {
-    fontSize: textScale(12),
-    color: Colors.textSecondary,
-    marginBottom: verticalScale(2),
-  },
-  mealName: {
-    fontSize: textScale(16),
-    fontWeight: "bold",
-    color: Colors.textPrimary,
-    marginBottom: verticalScale(2),
-  },
-  mealTime: {
-    fontSize: textScale(12),
-    color: Colors.textMuted,
-  },
+
   caloriesContainer: {
     alignItems: "flex-end",
   },

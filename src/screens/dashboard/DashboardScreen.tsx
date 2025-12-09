@@ -16,7 +16,8 @@ import { useDashboardStore } from "../../store/DashboardStore";
 import drawable from "../../utils/drawable";
 import { useNavigation } from "@react-navigation/native";
 import { DietTipSection, ExpertSection, LatestSkinScanSection, StressLevelSection } from "./Sections";
-import { Header, SafeScreen, Tabs } from "@/src/components";
+import { Header, SafeScreen, Tabs, NotificationPanel } from "@/src/components";
+import { useReminderStore } from "../../store/ReminderStore";
 
 
 
@@ -34,6 +35,9 @@ function DashboardScreen() {
   } = useDashboardStore();
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState("Skin");
+  const [notificationPanelVisible, setNotificationPanelVisible] = useState(false);
+  const { reminders } = useReminderStore();
+  const activeRemindersCount = reminders.filter(r => r.enabled).length;
 
   React.useEffect(() => {
     // Fetch initial data
@@ -66,7 +70,7 @@ function DashboardScreen() {
   const renderNotificationIcon = (
     <View style={styles.notificationButton}>
       <FontAwesome name="bell" size={20} color={Colors.textPrimary} />
-      <View style={styles.badge} />
+      {activeRemindersCount > 0 && <View style={styles.badge}><Text style={styles.badgeText}>{activeRemindersCount}</Text></View>}
     </View>
   );
 
@@ -78,7 +82,7 @@ function DashboardScreen() {
           subTitle="Ready to glow today?"
           avatarUri={user?.photoURL || drawable.reactLogo}
           rightIcon={renderNotificationIcon}
-          onRightIconPress={() => {}}
+          onRightIconPress={() => setNotificationPanelVisible(true)}
           containerStyle={{ paddingHorizontal: 0 }}
         />
 
@@ -109,8 +113,6 @@ function DashboardScreen() {
             
           </TouchableOpacity>
 
-          {/* Latest Skin Scan Section */}
-          {/* Latest Skin Scan Section */}
           {/* Latest Skin Scan Section */}
           <LatestSkinScanSection
             latestScanTime={latestScan.time || "No scans yet"}
@@ -143,6 +145,10 @@ function DashboardScreen() {
 
         </ScrollView>
       </View>
+      <NotificationPanel
+        visible={notificationPanelVisible}
+        onClose={() => setNotificationPanelVisible(false)}
+      />
     </SafeScreen>
   );
 }
@@ -170,14 +176,20 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 4,
+    right: 4,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: Colors.ButtonPink,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: Colors.WhiteColor,
   },
 
   fullWidthCardWrapper: {
