@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { scanUserImage } from "../services/ScanUserImageServic";
+import { BASE_URL } from "../res/api";
 
 interface ReportState {
   overallScore: number;
@@ -9,88 +11,178 @@ interface ReportState {
     description: string;
     rating: number;
     reviews: number;
-    imageIcon: string;
-    imageIconType: "Ionicons" | "MaterialCommunityIcons" | "FontAwesome5";
-    imageBg: string;
-    iconColor: string;
+    category: string;
   }[];
   addedProducts: string[]; // Store IDs of added products
+  scanHistory: any[]; // Store history of scans
   // Actions
   setOverallScore: (score: number) => void;
   setSkinAnalysis: (analysis: ReportState["skinAnalysis"]) => void;
   setRecommendedProducts: (products: ReportState["recommendedProducts"]) => void;
-  addProduct: (productId: string) => void;
-  removeProduct: (productId: string) => void;
+  setScanHistory: (history: any[]) => void;
+  addProduct: (productId: string, userId?: string) => Promise<void>;
+  removeProduct: (productId: string, userId?: string) => Promise<void>;
+  fetchUserProducts: (userId: string) => Promise<void>;
+  fetchLatestReport: (userId: string) => Promise<void>;
+  fetchScanHistory: (userId: string) => Promise<void>;
+  analyzeSkin: (imageUri: string, userId: string) => Promise<void>;
 }
 
 export const useReportStore = create<ReportState>((set) => ({
   overallScore: 0,
   skinAnalysis: {
-    Acne: 25,
-    Pigmentation: 15,
-    Dullness: 15,
-    Stress: 45,
-    Hydration: 85,
+    Acne: 0,
+    Pigmentation: 0,
+    Dullness: 0,
+    Stress: 0,
+    Hydration: 0,
   },
-  recommendedProducts: [
-    {
-      id: "1",
-      name: "Gentle Cleanser",
-      description: "For acne-prone skin",
-      rating: 4.8,
-      reviews: 120,
-      imageIcon: "bottle-tonic",
-      imageIconType: "MaterialCommunityIcons",
-      imageBg: "#E3F2FD",
-      iconColor: "#1976D2",
-    },
-    {
-      id: "2",
-      name: "Brightening Serum",
-      description: "Reduces pigmentation",
-      rating: 4.5,
-      reviews: 89,
-      imageIcon: "flask",
-      imageIconType: "FontAwesome5",
-      imageBg: "#F3E5F5",
-      iconColor: "#7B1FA2",
-    },
-    {
-      id: "3",
-      name: "Hydrating Moisturizer",
-      description: "Deep hydration",
-      rating: 4.9,
-      reviews: 210,
-      imageIcon: "water",
-      imageIconType: "Ionicons",
-      imageBg: "#E0F7FA",
-      iconColor: "#0097A7",
-    },
-     {
-      id: "4",
-      name: "Sunscreen SPF 50",
-      description: "UV Protection",
-      rating: 4.7,
-      reviews: 150,
-      imageIcon: "sunny",
-      imageIconType: "Ionicons",
-      imageBg: "#FFF3E0",
-      iconColor: "#FF9800",
-    },
-  ],
+  recommendedProducts: [],
+  scanHistory: [],
   setOverallScore: (overallScore) => set({ overallScore }),
   setSkinAnalysis: (skinAnalysis) => set({ skinAnalysis }),
   setRecommendedProducts: (recommendedProducts) => set({ recommendedProducts }),
+  setScanHistory: (scanHistory) => set({ scanHistory }),
   addedProducts: [],
-  addProduct: (productId) =>
-    set((state) => {
-      if (!state.addedProducts.includes(productId)) {
-        return { addedProducts: [...state.addedProducts, productId] };
+  addProduct: async (productId, userId = 'anonymous') => {
+    try {
+      // Add to backend
+      const response = await fetch(`${BASE_URL}/user-products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, productId }),
+      });
+      
+      if (response.ok) {
+        set((state) => {
+          if (!state.addedProducts.includes(productId)) {
+            return { addedProducts: [...state.addedProducts, productId] };
+          }
+          return state;
+        });
       }
-      return state;
-    }),
-  removeProduct: (productId) =>
-    set((state) => ({
-      addedProducts: state.addedProducts.filter((id) => id !== productId),
-    })),
+    } catch (error) {
+      console.error('Failed to add product:', error);
+    }
+  },
+  removeProduct: async (productId, userId = 'anonymous') => {
+    try {
+      // Find the UserProduct entry to delete
+      const response = await fetch(`${BASE_URL}/user-products?userId=${userId}`);
+      const userProducts = await response.json();
+      const userProduct = userProducts.find((up: any) => 
+        up.productId._id === productId || up.productId === productId
+      );
+      
+      if (userProduct) {
+        await fetch(`${BASE_URL}/user-products/${userProduct._id}`, {
+          method: 'DELETE',
+        });
+        
+        set((state) => ({
+          addedProducts: state.addedProducts.filter((id) => id !== productId),
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to remove product:', error);
+    }
+  },
+  fetchUserProducts: async (userId: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/user-products?userId=${userId}`);
+      const userProducts = await response.json();
+      const productIds = userProducts.map((up: any) => 
+        (typeof up.productId === 'object' && up.productId !== null) ? up.productId._id.toString() : String(up.productId)
+      );
+      set({ addedProducts: productIds });
+    } catch (error) {
+      console.error('Failed to fetch user products:', error);
+    }
+  },
+  fetchLatestReport: async (userId: string) => {
+    try {
+      // 1. Fetch latest scan
+      const response = await fetch(`${BASE_URL}/scans?userId=${userId}`);
+      const scans = await response.json();
+      
+      if (Array.isArray(scans) && scans.length > 0) {
+        const latest = scans[0];
+        
+        // 2. Update store with analysis
+        set({ 
+          overallScore: latest.analysis.overall_score,
+          skinAnalysis: latest.analysis 
+        });
+
+        // 3. Fetch AI-generated Diet Plan for products
+        try {
+            const dietResponse = await fetch(`${BASE_URL}/diet-plan?userId=${userId}`);
+            const dietPlans = await dietResponse.json();
+            // Find the personalized plan related to this scan or the latest one
+            const latestPlan = dietPlans.find((p: any) => p.planType === 'personalized') || dietPlans[0];
+
+            if (latestPlan && latestPlan.products && latestPlan.products.length > 0) {
+                const aiProducts = latestPlan.products.map((p: any, index: number) => ({
+                    id: `ai-${index}`,
+                    name: p.name,
+                    description: p.reason,
+                    rating: 4.8, // Default high rating for AI picks
+                    reviews: 100, // Placeholder
+                    category: p.type
+                }));
+                set({ recommendedProducts: aiProducts });
+            } else {
+                // Fallback to all products if no AI products found
+                const recResponse = await fetch(`${BASE_URL}/products`);
+                const allProducts = await recResponse.json();
+                set({ recommendedProducts: allProducts });
+            }
+        } catch (dietError) {
+            console.error("Failed to fetch diet plan for products:", dietError);
+             // Fallback
+             const recResponse = await fetch(`${BASE_URL}/products`);
+             const allProducts = await recResponse.json();
+             set({ recommendedProducts: allProducts });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch latest report:', error);
+    }
+  },
+  fetchScanHistory: async (userId: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/scans?userId=${userId}`);
+      const scans = await response.json();
+      if (Array.isArray(scans)) {
+        set({ scanHistory: scans });
+      }
+    } catch (error) {
+      console.error('Failed to fetch scan history:', error);
+    }
+  },
+  analyzeSkin: async (imageUri, userId) => {
+    try {
+      const result = await scanUserImage(imageUri, userId);
+      console.log(result);
+      set({
+        skinAnalysis: {
+          Acne: result.Acne,
+          Pigmentation: result.Pigmentation,
+          Dullness: result.Dullness,
+          Stress: result.Stress,
+          Hydration: result.Hydration,
+        },
+        overallScore: result.overall_score,
+      });
+
+      // Fetch ALL products so user can choose from the full catalog
+      const response = await fetch(`${BASE_URL}/products`);
+      const allProducts = await response.json();
+      set({ recommendedProducts: allProducts });
+
+    } catch (error) {
+      // console.warn("Skin analysis failed:", error);
+      throw error;
+    }
+  },
 }));

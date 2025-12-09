@@ -17,7 +17,7 @@ interface CustomLoaderProps {
 const CustomLoader: React.FC<CustomLoaderProps> = ({
   visible,
   size = "large",
-  color = Colors.CommonLoaderColor,
+  color = Colors.ButtonPink, // Brand color instead of generic loader color
 }) => {
   if (!visible) return null;
   return (

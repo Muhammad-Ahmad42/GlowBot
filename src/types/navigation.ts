@@ -1,3 +1,4 @@
+
 export type RootStackParamList = {
     SplashScreen: undefined;
     LoginScreen: undefined;
@@ -17,4 +18,6 @@ export type RootStackParamList = {
     AllProducts: { filter?: string } | undefined;
     WeeklyScan: undefined;
     Reminders: undefined;
+    AllScans: undefined;
+    ScanResult: { scanId?: string } | undefined;
 };

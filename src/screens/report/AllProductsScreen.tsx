@@ -5,11 +5,53 @@ import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-ico
 import { horizontalScale, ms, textScale, verticalScale } from "../../utils/SizeScalingUtility";
 import Colors from "../../utils/Colors";
 import { useReportStore } from "../../store/ReportStore";
+import { useAuthStore } from "../../store/AuthStore";
 import CustomModal from "@/src/components/CustomModal";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+
+// UI Configuration - maps product categories to their visual styling
+const CATEGORY_UI_CONFIG: Record<string, {
+  imageIcon: string;
+  imageIconType: "Ionicons" | "MaterialCommunityIcons" | "FontAwesome5";
+  imageBg: string;
+  iconColor: string;
+}> = {
+  "Cleanser": {
+    imageIcon: "water-outline",
+    imageIconType: "Ionicons",
+    imageBg: "#E3F2FD",
+    iconColor: "#1976D2",
+  },
+  "Serum": {
+    imageIcon: "flask",
+    imageIconType: "FontAwesome5",
+    imageBg: "#F3E5F5",
+    iconColor: "#7B1FA2",
+  },
+  "Moisturizer": {
+    imageIcon: "water",
+    imageIconType: "Ionicons",
+    imageBg: "#E0F7FA",
+    iconColor: "#0097A7",
+  },
+  "Sunscreen": {
+    imageIcon: "sunny",
+    imageIconType: "Ionicons",
+    imageBg: "#FFF3E0",
+    iconColor: "#FF9800",
+  },
+  "Treatment": {
+    imageIcon: "medical",
+    imageIconType: "Ionicons",
+    imageBg: "#FFEBEE",
+    iconColor: "#C62828",
+  },
+};
 
 const AllProductsScreen = () => {
-  const { recommendedProducts, addProduct, removeProduct, addedProducts } = useReportStore();
+  const { user } = useAuthStore();
+  const { recommendedProducts, addProduct, removeProduct, addedProducts, fetchUserProducts } = useReportStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [modalType, setModalType] = useState<"add" | "remove">("add");
@@ -17,30 +59,42 @@ const AllProductsScreen = () => {
   const navigation = useNavigation();
   const filter = route.params?.filter;
 
+  useFocusEffect(
+    useCallback(() => {
+      const userId = user?.uid || "anonymous";
+      fetchUserProducts(userId);
+    }, [user?.uid])
+  );
+
   const handleAddProduct = (product: any) => {
-    addProduct(product.id);
+    const userId = user?.uid || "anonymous";
+    addProduct(product.id, userId);
     setSelectedProduct(product);
     setModalType("add");
     setModalVisible(true);
   };
 
   const handleRemoveProduct = (product: any) => {
-    removeProduct(product.id);
+    const userId = user?.uid || "anonymous";
+    removeProduct(product.id, userId);
     setSelectedProduct(product);
     setModalType("remove");
     setModalVisible(true);
   };
 
-  const renderIcon = (item: any) => {
-    switch (item.imageIconType) {
+  const renderIcon = (category: string) => {
+    const uiConfig = CATEGORY_UI_CONFIG[category] || CATEGORY_UI_CONFIG["Moisturizer"];
+    const { imageIcon, imageIconType, iconColor } = uiConfig;
+
+    switch (imageIconType) {
       case "MaterialCommunityIcons":
         return (
-          <MaterialCommunityIcons name={item.imageIcon as any} size={30} color={item.iconColor} />
+          <MaterialCommunityIcons name={imageIcon as any} size={30} color={iconColor} />
         );
       case "FontAwesome5":
-        return <FontAwesome5 name={item.imageIcon as any} size={24} color={item.iconColor} />;
+        return <FontAwesome5 name={imageIcon as any} size={24} color={iconColor} />;
       default:
-        return <Ionicons name={item.imageIcon as any} size={30} color={item.iconColor} />;
+        return <Ionicons name={imageIcon as any} size={30} color={iconColor} />;
     }
   };
 
@@ -68,10 +122,12 @@ const AllProductsScreen = () => {
           ) : (
             displayedProducts.map((item) => {
               const isAdded = addedProducts?.includes(item.id);
+              const uiConfig = CATEGORY_UI_CONFIG[item.category] || CATEGORY_UI_CONFIG["Moisturizer"];
+              
               return (
                 <Card key={item.id} style={styles.productCard}>
-                  <View style={[styles.productImageContainer, { backgroundColor: item.imageBg }]}>
-                    {renderIcon(item)}
+                  <View style={[styles.productImageContainer, { backgroundColor: uiConfig.imageBg }]}>
+                    {renderIcon(item.category)}
                   </View>
                   <View style={styles.productInfo}>
                     <Text style={styles.productName}>{item.name}</Text>

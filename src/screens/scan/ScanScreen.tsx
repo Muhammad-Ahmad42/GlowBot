@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   horizontalScale,
   ms,
@@ -19,10 +20,22 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { Header, SafeScreen } from "@/src/components";
+import { useReportStore } from "../../store/ReportStore";
+import { useAuthStore } from "../../store/AuthStore";
+import RecentScansSection from "./components/RecentScansSection";
 
 const ScanScreen = () => {
   const navigation = useNavigation<any>();
   const [permission, requestPermission] = ImagePicker.useCameraPermissions();
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuthStore();
+  const { analyzeSkin, scanHistory, fetchScanHistory } = useReportStore();
+
+  useEffect(() => {
+    if (user?.uid) {
+      fetchScanHistory(user.uid);
+    }
+  }, [user]);
 
   const handleScanPress = async () => {
     try {
@@ -40,15 +53,62 @@ const ScanScreen = () => {
 
       // Launch Camera
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [4, 3],
         quality: 1,
       });
 
       if (!result.canceled) {
-        // Navigate to Report Screen with the image uri (mocking analysis)
-        navigation.navigate("ReportStackScreens", { imageUri: result.assets[0].uri });
+        setIsLoading(true);
+        const imageUri = result.assets[0].uri;
+        
+        try {
+          const userId = user?.uid || "anonymous";
+          await analyzeSkin(imageUri, userId);
+          setIsLoading(false);
+          // Refresh history after new scan
+          if (user?.uid) fetchScanHistory(user.uid);
+          // Navigate to Scan Result Screen
+          navigation.navigate("ScanResult");
+        } catch (error: any) {
+          setIsLoading(false);
+          
+          // Provide specific error messages based on backend response
+          let errorTitle = "Analysis Failed";
+          let errorMessage = "Could not analyze the image. Please try again.";
+          
+          // Check if error has response data from backend
+          if (error.response?.data) {
+            const { error: backendError, errorType } = error.response.data;
+            
+            if (errorType === 'NO_FACE_DETECTED') {
+              errorTitle = "No Face Detected";
+              errorMessage = backendError || "Please ensure your face is clearly visible and well-lit, then try again.";
+            } else if (errorType === 'INVALID_IMAGE') {
+              errorTitle = "Invalid Image";
+              errorMessage = backendError || "Could not read the image. Please try taking another photo.";
+            } else {
+              errorMessage = backendError || errorMessage;
+            }
+          } else if (error.message) {
+            // Fallback to checking error message
+            if (error.message.includes("network")) {
+              errorTitle = "Network Error";
+              errorMessage = "Please check your internet connection and try again.";
+            } else if (error.message.includes("400")) {
+              errorTitle = "Analysis Error";
+              errorMessage = "The image could not be analyzed. Please ensure your face is clearly visible.";
+            } else if (error.message.includes("HTTP error")) {
+              errorTitle = "Server Error";
+              errorMessage = "Our servers are experiencing issues. Please try again in a moment.";
+            }
+          }
+          
+          Alert.alert(errorTitle, errorMessage, [
+            { text: "OK", style: "default" }
+          ]);
+        }
       }
     } catch (error) {
       console.log("Error launching camera:", error);
@@ -105,47 +165,28 @@ const ScanScreen = () => {
             <TouchableOpacity
               style={styles.shutterButton}
               onPress={handleScanPress}
+              disabled={isLoading}
             >
               <View style={styles.shutterInner}>
-                <Ionicons name="camera" size={32} color="white" />
+                {isLoading ? (
+                  <ActivityIndicator size="large" color="white" />
+                ) : (
+                  <Ionicons name="camera" size={32} color="white" />
+                )}
               </View>
             </TouchableOpacity>
             <Text style={styles.actionText}>Tap to Start Scan</Text>
           </View>
 
           {/* Recent Scans */}
-          <View style={styles.recentScansContainer}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent Scans</Text>
-              <TouchableOpacity>
-                <Text style={styles.viewAllText}>View All</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 5 }}>
-              <View style={[styles.scanCard, { backgroundColor: Colors.StatusGood }]}>
-                <View style={styles.scanIconContainer}>
-                  <Ionicons name="checkmark" size={16} color={Colors.StatusGoodText} />
-                </View>
-                <Text style={styles.scanDate}>Today</Text>
-              </View>
-
-              <View style={[styles.scanCard, { backgroundColor: Colors.StatusFair }]}>
-                <View style={styles.scanIconContainer}>
-                  <Text style={{ color: Colors.StatusFairText, fontWeight: 'bold' }}>!</Text>
-                </View>
-                <Text style={styles.scanDate}>2 days</Text>
-              </View>
-
-              <View style={[styles.scanCard, { backgroundColor: "#E3F2FD" }]}>
-                <View style={styles.scanIconContainer}>
-                  <Text style={{ color: "#1976D2", fontWeight: 'bold' }}>i</Text>
-                </View>
-                <Text style={styles.scanDate}>1 week</Text>
-              </View>
-              <View style={[styles.scanCard, { backgroundColor: "#F3E5F5", width: 40 }]} />
-            </ScrollView>
-          </View>
+          <RecentScansSection 
+            scans={scanHistory} 
+            onViewAllPress={() => navigation.navigate("AllScans")}
+            onScanPress={(scan) => {
+                // Could navigate to report details or show a modal
+                console.log("Scan pressed:", scan._id);
+            }}
+          />
 
           {/* Premium Banner */}
           <LinearGradient
@@ -261,45 +302,6 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: textScale(14),
     color: Colors.textSecondary,
-    fontWeight: "500",
-  },
-  recentScansContainer: {
-    backgroundColor: "white",
-    borderRadius: ms(20),
-    padding: ms(20),
-    marginBottom: verticalScale(20),
-    elevation: 2,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: verticalScale(15),
-  },
-  sectionTitle: {
-    fontSize: textScale(16),
-    fontWeight: "bold",
-    color: Colors.textPrimary,
-  },
-  viewAllText: {
-    fontSize: textScale(14),
-    color: Colors.ButtonPink,
-    fontWeight: "600",
-  },
-  scanCard: {
-    width: ms(80),
-    height: ms(80),
-    borderRadius: ms(15),
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: horizontalScale(15),
-  },
-  scanIconContainer: {
-    marginBottom: verticalScale(5),
-  },
-  scanDate: {
-    fontSize: textScale(12),
-    color: Colors.textPrimary,
     fontWeight: "500",
   },
   premiumBanner: {

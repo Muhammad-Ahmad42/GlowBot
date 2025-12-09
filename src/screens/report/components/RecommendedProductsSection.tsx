@@ -11,11 +11,47 @@ interface Product {
   description: string;
   rating: number;
   reviews: number;
+  category: string;
+}
+
+// UI Configuration - maps product categories to their visual styling
+const CATEGORY_UI_CONFIG: Record<string, {
   imageIcon: string;
   imageIconType: "Ionicons" | "MaterialCommunityIcons" | "FontAwesome5";
   imageBg: string;
   iconColor: string;
-}
+}> = {
+  "Cleanser": {
+    imageIcon: "water-outline",
+    imageIconType: "Ionicons",
+    imageBg: "#E3F2FD",
+    iconColor: "#1976D2",
+  },
+  "Serum": {
+    imageIcon: "flask",
+    imageIconType: "FontAwesome5",
+    imageBg: "#F3E5F5",
+    iconColor: "#7B1FA2",
+  },
+  "Moisturizer": {
+    imageIcon: "water",
+    imageIconType: "Ionicons",
+    imageBg: "#E0F7FA",
+    iconColor: "#0097A7",
+  },
+  "Sunscreen": {
+    imageIcon: "sunny",
+    imageIconType: "Ionicons",
+    imageBg: "#FFF3E0",
+    iconColor: "#FF9800",
+  },
+  "Treatment": {
+    imageIcon: "medical",
+    imageIconType: "Ionicons",
+    imageBg: "#FFEBEE",
+    iconColor: "#C62828",
+  },
+};
 
 interface RecommendedProductsSectionProps {
   products: Product[];
@@ -30,16 +66,19 @@ const RecommendedProductsSection: React.FC<RecommendedProductsSectionProps> = ({
   onAdd,
   addedProducts = [],
 }) => {
-  const renderIcon = (item: Product) => {
-    switch (item.imageIconType) {
+  const renderIcon = (category: string) => {
+    const uiConfig = CATEGORY_UI_CONFIG[category] || CATEGORY_UI_CONFIG["Moisturizer"];
+    const { imageIcon, imageIconType, iconColor } = uiConfig;
+
+    switch (imageIconType) {
       case "MaterialCommunityIcons":
         return (
-          <MaterialCommunityIcons name={item.imageIcon as any} size={30} color={item.iconColor} />
+          <MaterialCommunityIcons name={imageIcon as any} size={30} color={iconColor} />
         );
       case "FontAwesome5":
-        return <FontAwesome5 name={item.imageIcon as any} size={24} color={item.iconColor} />;
+        return <FontAwesome5 name={imageIcon as any} size={24} color={iconColor} />;
       default:
-        return <Ionicons name={item.imageIcon as any} size={30} color={item.iconColor} />;
+        return <Ionicons name={imageIcon as any} size={30} color={iconColor} />;
     }
   };
 
@@ -64,10 +103,12 @@ const RecommendedProductsSection: React.FC<RecommendedProductsSectionProps> = ({
 
       {displayProducts.map((item) => {
         const isAdded = addedProducts.includes(item.id);
+        const uiConfig = CATEGORY_UI_CONFIG[item.category] || CATEGORY_UI_CONFIG["Moisturizer"];
+        
         return (
           <Card key={item.id} style={styles.productCard}>
-            <View style={[styles.productImageContainer, { backgroundColor: item.imageBg }]}>
-              {renderIcon(item)}
+            <View style={[styles.productImageContainer, { backgroundColor: uiConfig.imageBg }]}>
+              {renderIcon(item.category)}
             </View>
             <View style={styles.productInfo}>
               <Text style={styles.productName}>{item.name}</Text>

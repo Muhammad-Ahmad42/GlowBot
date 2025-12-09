@@ -54,7 +54,7 @@ const DietTipSection: React.FC<Props> = ({
       </View>
 
       <View style={styles.itemsRow}>
-        {items.map((itemName, index) => {
+        {items.slice(0, 3).map((itemName, index) => {
           const config = DIET_ITEMS_CONFIG[itemName] || { icon: "food", color: Colors.textSecondary };
           return (
             <View key={index} style={styles.itemContainer}>

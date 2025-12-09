@@ -27,6 +27,8 @@ import {
   AllProductsScreen,
   WeeklyScanScreen,
   RemindersScreen,
+  AllScansScreen,
+  ScanResultScreen,
 } from "../screens";
 import { RootStackParamList } from "../types/navigation";
 import { useAuthStore } from "../store/AuthStore";
@@ -71,6 +73,7 @@ const ReportStackNavigator = () => (
     <ReportStack.Screen name="AllProducts" component={AllProductsScreen} />
     <ReportStack.Screen name="WeeklyScan" component={WeeklyScanScreen} />
     <ReportStack.Screen name="Reminders" component={RemindersScreen} />
+    <ReportStack.Screen name="ExpertBooking" component={ExpertBookingScreen} />
   </ReportStack.Navigator>
 );
 
@@ -78,6 +81,8 @@ const ReportStackNavigator = () => (
 const ScanStackNavigator = () => (
   <ScanStack.Navigator screenOptions={{ headerShown: false }}>
     <ScanStack.Screen name="ScanScreen" component={ScanScreen} />
+    <ScanStack.Screen name="AllScans" component={AllScansScreen} />
+    <ScanStack.Screen name="ScanResult" component={ScanResultScreen} />
   </ScanStack.Navigator>
 );
 

@@ -15,6 +15,8 @@ import AllProductsScreen from "./report/AllProductsScreen";
 import WeeklyScanScreen from "./report/WeeklyScanScreen";
 import RemindersScreen from "./report/RemindersScreen";
 import TermsConditionsScreen from "./profile/TermsConditionsScreen";
+import AllScansScreen from "./scan/AllScansScreen";
+import ScanResultScreen from "./scan/ScanResultScreen";
 
 export {
     LoginScreen,
@@ -33,5 +35,7 @@ export {
     TermsConditionsScreen,
     AllProductsScreen,
     WeeklyScanScreen,
-    RemindersScreen
+    RemindersScreen,
+    AllScansScreen,
+    ScanResultScreen
 };

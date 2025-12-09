@@ -23,11 +23,38 @@ import { Header, SafeScreen, Tabs } from "@/src/components";
 
 function DashboardScreen() {
   const { user } = useAuthStore();
-  const { latestScan, stressLevel, dietTip, experts } = useDashboardStore();
-    const navigation = useNavigation<any>();
+  const { 
+    latestScan, 
+    stressLevel, 
+    dietTip, 
+    experts, 
+    fetchScanHistory, 
+    fetchExperts, 
+    fetchDietPlan 
+  } = useDashboardStore();
+  const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState("Skin");
 
-  const availableExpert = experts.find((e) => e.available) || experts[0];
+  React.useEffect(() => {
+    // Fetch initial data
+    const userId = user?.uid || "anonymous"; // Use actual user ID
+    fetchScanHistory(userId);
+    fetchExperts();
+    fetchDietPlan(userId);
+  }, []);
+
+  const availableExpert = experts.length > 0 
+    ? (experts.find((e) => e.available) || experts[0]) 
+    : { 
+        name: "Loading...", 
+        description: "Fetching experts...", 
+        available: false, 
+        specialty: "", 
+        rating: 0, 
+        reviews: 0, 
+        fee: "", 
+        id: "loading" 
+      };
 
   const tabs = [
     { name: "Skin", icon: "happy-outline" },
@@ -86,7 +113,7 @@ function DashboardScreen() {
           {/* Latest Skin Scan Section */}
           {/* Latest Skin Scan Section */}
           <LatestSkinScanSection
-            latestScanTime={latestScan.time}
+            latestScanTime={latestScan.time || "No scans yet"}
             skinAnalysis={latestScan.skinAnalysis}
           />
 
@@ -96,11 +123,11 @@ function DashboardScreen() {
             onViewHistory={() => navigation.navigate("StressHistory")}
           />
         <DietTipSection
-          title={dietTip.title}
-          mainTip={dietTip.mainTip}
+          title={dietTip.title || "Loading..."}
+          mainTip={dietTip.mainTip || "Fetching tip..."}
           description={dietTip.description}
           category={dietTip.category}
-          items={dietTip.items}
+          items={dietTip.items || []}
           onPressButton={() => navigation.navigate("DietPlan")}
         />
 

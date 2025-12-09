@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { Header, SafeScreen } from "@/src/components";
 import { Ionicons } from "@expo/vector-icons";
 import { horizontalScale, ms } from "../../utils/SizeScalingUtility";
 import Colors from "../../utils/Colors";
 import { useReportStore } from "../../store/ReportStore";
-import { useNavigation } from "@react-navigation/native";
+import { useAuthStore } from "../../store/AuthStore";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import OverallScoreSection from "./components/OverallScoreSection";
 import SkinConditionSection from "./components/SkinConditionSection";
 import DetailedAnalysisSection from "./components/DetailedAnalysisSection";
@@ -16,19 +17,32 @@ import CustomModal from "@/src/components/CustomModal";
 
 const ReportScreen = () => {
   const navigation = useNavigation<any>();
+  const { user } = useAuthStore();
   const {
     overallScore,
     skinAnalysis,
     recommendedProducts,
     addProduct,
     addedProducts,
+    fetchUserProducts,
+    fetchLatestReport,
   } = useReportStore();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
+  useFocusEffect(
+    useCallback(() => {
+      const userId = user?.uid || "anonymous";
+      fetchUserProducts(userId);
+      // Also fetch latest report to ensure recommendations are shown if app was restarted
+      fetchLatestReport(userId);
+    }, [user?.uid])
+  );
+
   const handleAddProduct = (product: any) => {
-    addProduct(product.id);
+    const userId = user?.uid || "anonymous";
+    addProduct(product.id, userId);
     setSelectedProduct(product);
     setModalVisible(true);
   };

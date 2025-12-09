@@ -22,18 +22,29 @@ const OverallScoreSection: React.FC<OverallScoreSectionProps> = ({ score }) => {
     return OVERALL_SCORE_LABELS.minLabel;
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "#4CAF50"; // Green
+    if (score >= 60) return "#FF9800"; // Orange
+    return "#F44336"; // Red
+  };
+
+  const scoreColor = getScoreColor(score);
+  const displayScore = score !== undefined && score !== null ? score : 0;
+
   return (
     <Card style={styles.scoreCard}>
       <View style={styles.scoreHeader}>
         <Text style={styles.scoreTitle}>Overall Skin Score</Text>
         <Ionicons name="information-circle-outline" size={20} color={Colors.textSecondary} />
       </View>
-      <View style={styles.scoreValueContainer}>
-        <Text style={styles.scoreValue}>{score}</Text>
-        <Text style={styles.scoreLabel}>{getScoreLabel(score)}</Text>
+      
+      <View style={styles.centerContainer}>
+        <Text style={[styles.scoreValue, { color: scoreColor }]}>{displayScore}</Text>
+        <Text style={[styles.scoreLabel, { color: scoreColor }]}>{getScoreLabel(displayScore)}</Text>
       </View>
+
       <View style={styles.progressBarContainer}>
-        <View style={[styles.progressBar, { width: `${score}%` }]} />
+        <View style={[styles.progressBar, { width: `${displayScore}%`, backgroundColor: scoreColor }]} />
       </View>
       <View style={styles.scoreLabels}>
         <Text style={styles.minMaxLabel}>{OVERALL_SCORE_LABELS.minLabel}</Text>
@@ -52,12 +63,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: verticalScale(10),
+    marginBottom: verticalScale(15),
   },
   scoreTitle: {
-    fontSize: textScale(16),
+    fontSize: textScale(18),
     fontWeight: "bold",
     color: Colors.textPrimary,
+  },
+  centerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: verticalScale(15),
   },
   scoreValueContainer: {
     flexDirection: "row",
@@ -65,27 +81,24 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(10),
   },
   scoreValue: {
-    fontSize: textScale(36),
+    fontSize: textScale(48), // Much larger
     fontWeight: "bold",
-    color: Colors.textPrimary,
-    marginRight: 10,
+    marginBottom: verticalScale(5),
   },
   scoreLabel: {
-    fontSize: textScale(18),
+    fontSize: textScale(20),
     fontWeight: "600",
-    color: Colors.StatusGoodText,
   },
   progressBarContainer: {
-    height: verticalScale(8),
-    backgroundColor: "#E0E0E0",
-    borderRadius: ms(4),
+    height: verticalScale(12),
+    backgroundColor: "#F5F5F5",
+    borderRadius: ms(5),
     marginBottom: verticalScale(5),
     overflow: "hidden",
   },
   progressBar: {
     height: "100%",
-    backgroundColor: Colors.StatusGoodText,
-    borderRadius: ms(4),
+    borderRadius: ms(5),
   },
   scoreLabels: {
     flexDirection: "row",

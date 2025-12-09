@@ -48,9 +48,9 @@ const LatestSkinScanSection: React.FC<Props> = ({ latestScanTime, skinAnalysis }
     }
   };
 
-  const items = Object.entries(skinAnalysis).map(([key, value]) => ({
+  const items = ["Acne", "Pigmentation", "Dullness"].map((key) => ({
     label: key,
-    value: getStatus(value),
+    value: getStatus(skinAnalysis[key] || 0),
   }));
 
   return (
