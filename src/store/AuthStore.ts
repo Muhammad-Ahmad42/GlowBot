@@ -44,7 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       // Sync user to backend
       try {
-        const response = await fetch('http://192.168.100.204:5501/users', {
+        const response = await fetch('http://192.168.18.225:5501/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

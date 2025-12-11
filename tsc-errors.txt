@@ -1,1 +1,0 @@
-﻿functions/src/genkit-sample.ts(2,24): error TS2307: Cannot find module '@genkit-ai/google-genai' or its corresponding type declarations.

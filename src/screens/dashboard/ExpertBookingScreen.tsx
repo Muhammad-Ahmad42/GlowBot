@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, FlatList, TextInput } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, FlatList, TextInput, Alert } from "react-native";
 import { SafeScreen, Header, CustomModal } from "@/src/components";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -7,75 +7,138 @@ import Colors from "../../utils/Colors";
 import { horizontalScale, ms, textScale, verticalScale } from "../../utils/SizeScalingUtility";
 import drawable from "../../utils/drawable";
 import { useDashboardStore, DashboardState } from "../../store/DashboardStore";
+import { useConnectionStore } from "../../store/ConnectionStore";
+import { useAuthStore } from "../../store/AuthStore";
 
 const ExpertBookingScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const { user } = useAuthStore();
   const experts = useDashboardStore((state: DashboardState) => state.experts);
+  const { connections, sendConnectionRequest, fetchMyConnections, getConnectionStatus, getConnectionByExpert } = useConnectionStore();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExpert, setSelectedExpert] = useState<any>(null);
+  const [connectingExpertId, setConnectingExpertId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user?.uid) {
+      fetchMyConnections(user.uid);
+    }
+  }, [user?.uid]);
 
   const filteredExperts = experts.filter((expert) =>
     expert.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     expert.specialty.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const [connectingExpertId, setConnectingExpertId] = useState<string | null>(null);
-
   const handleExpertPress = (expert: any) => {
     setSelectedExpert(expert);
     setModalVisible(true);
   };
 
-  const handleConnectPress = (expertId: string) => {
+  const handleConnectPress = async (expertId: string) => {
+    if (!user?.uid) {
+      Alert.alert("Error", "Please login to connect with experts");
+      return;
+    }
+
     setConnectingExpertId(expertId);
-    // Simulate API call for booking request
-    setTimeout(() => {
-        setConnectingExpertId(null);
-        setModalVisible(true);
-        setSelectedExpert(experts.find(e => e.id === expertId));
-    }, 1500);
+    try {
+      await sendConnectionRequest(
+        user.uid,
+        user?.displayName || 'User',
+        user?.photoURL || undefined,
+        user?.email || '',
+        expertId,
+        'I would like to consult with you about my skin concerns.'
+      );
+      
+      const expert = experts.find(e => e.id === expertId);
+      Alert.alert(
+        "Request Sent!",
+        `Your connection request has been sent to ${expert?.name}. You'll be notified when they accept.`
+      );
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to send connection request");
+    } finally {
+      setConnectingExpertId(null);
+    }
   };
 
-  const renderExpertCard = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.card} onPress={() => handleExpertPress(item)}>
-      <View style={styles.cardHeader}>
-        <Image source={drawable.reactLogo} style={styles.avatar} />
-        <View style={styles.infoContainer}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.specialty}>{item.specialty}</Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={14} color="#FFD700" />
-            <Text style={styles.ratingText}>{item.rating} ({item.reviews} reviews)</Text>
+  const handleChatPress = (expertId: string) => {
+    const connection = getConnectionByExpert(expertId);
+    const expert = experts.find(e => e.id === expertId);
+    
+    if (connection) {
+      navigation.navigate('ChatScreen', {
+        connectionId: connection.id,
+        expertName: expert?.name || 'Expert',
+        expertAvatar: (expert as any)?.imageUrl,
+      });
+    }
+  };
+
+  const getButtonConfig = (expertId: string, isAvailable: boolean) => {
+    const status = getConnectionStatus(expertId);
+    
+    if (status === 'accepted') {
+      return { text: 'Chat', onPress: () => handleChatPress(expertId), disabled: false, style: styles.chatButton };
+    } else if (status === 'pending') {
+      return { text: 'Pending...', onPress: () => {}, disabled: true, style: styles.pendingButton };
+    } else if (connectingExpertId === expertId) {
+      return { text: 'Connecting...', onPress: () => {}, disabled: true, style: styles.bookButton };
+    } else {
+      return { text: 'Connect', onPress: () => handleConnectPress(expertId), disabled: !isAvailable, style: isAvailable ? styles.bookButton : styles.disabledButton };
+    }
+  };
+
+  const renderExpertCard = ({ item }: { item: any }) => {
+    const buttonConfig = getButtonConfig(item.id, item.available);
+    
+    return (
+      <TouchableOpacity style={styles.card} onPress={() => handleExpertPress(item)}>
+        <View style={styles.cardHeader}>
+          <Image 
+            source={item.imageUrl ? { uri: item.imageUrl } : drawable.reactLogo} 
+            style={styles.avatar} 
+          />
+          <View style={styles.infoContainer}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.specialty}>{item.specialty}</Text>
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={14} color="#FFD700" />
+              <Text style={styles.ratingText}>{item.rating} ({item.reviews} reviews)</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.priceContainer}>
+          <View style={styles.priceContainer}>
             <Text style={styles.priceText}>{item.fee}</Text>
             <Text style={styles.perSessionText}>/ session</Text>
+          </View>
         </View>
-      </View>
-      
-      <View style={styles.divider} />
+        
+        <View style={styles.divider} />
 
-      <View style={styles.cardFooter}>
-        <View style={styles.statusContainer}>
+        <View style={styles.cardFooter}>
+          <View style={styles.statusContainer}>
             <View style={[styles.statusDot, { backgroundColor: item.available ? Colors.StatusGoodText : Colors.textMuted }]} />
             <Text style={[styles.statusText, { color: item.available ? Colors.StatusGoodText : Colors.textMuted }]}>
-                {item.available ? "Available Today" : "Next Available: Mon"}
+              {item.available ? "Available Today" : "Next Available: Mon"}
             </Text>
+          </View>
+          <TouchableOpacity 
+            style={[styles.bookButton, buttonConfig.style]} 
+            disabled={buttonConfig.disabled}
+            onPress={buttonConfig.onPress}
+          >
+            <Text style={styles.bookButtonText}>
+              {buttonConfig.text}
+            </Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity 
-            style={[styles.bookButton, !item.available && styles.disabledButton]} 
-            disabled={!item.available || connectingExpertId === item.id}
-            onPress={() => handleConnectPress(item.id)}
-        >
-          <Text style={styles.bookButtonText}>
-            {connectingExpertId === item.id ? "Connecting..." : "Connect"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeScreen>
@@ -293,6 +356,18 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
       backgroundColor: Colors.textMuted
+  },
+  chatButton: {
+      backgroundColor: Colors.StatusGoodText,
+      paddingHorizontal: horizontalScale(16),
+      paddingVertical: verticalScale(8),
+      borderRadius: ms(20)
+  },
+  pendingButton: {
+      backgroundColor: Colors.textMuted,
+      paddingHorizontal: horizontalScale(16),
+      paddingVertical: verticalScale(8),
+      borderRadius: ms(20)
   },
   bookButtonText: {
       color: Colors.WhiteColor,

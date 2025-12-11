@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
 import Colors from "../utils/Colors";
@@ -29,6 +30,7 @@ import {
   RemindersScreen,
   AllScansScreen,
   ScanResultScreen,
+  ChatScreen,
 } from "../screens";
 import { RootStackParamList } from "../types/navigation";
 import { useAuthStore } from "../store/AuthStore";
@@ -63,6 +65,7 @@ const DashboardStackNavigator = () => (
     <DashboardStack.Screen name="ExpertBooking" component={ExpertBookingScreen} />
     <DashboardStack.Screen name="DietPlan" component={DietPlanScreen} />
     <DashboardStack.Screen name="StressHistory" component={StressHistoryScreen} />
+    <DashboardStack.Screen name="ChatScreen" component={ChatScreen} />
   </DashboardStack.Navigator>
 );
 
@@ -124,58 +127,64 @@ const tabStyles = StyleSheet.create({
 
 const BottomTabNavigator = () => (
   <BottomTabs.Navigator
-    screenOptions={({ route }) => ({
-      headerShown: false,
-      tabBarShowLabel: true,
-      tabBarActiveTintColor: Colors.WhiteColor,
-      tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
-      tabBarStyle: {
-        ...tabStyles.tabBar,
-        backgroundColor: "transparent",
-        borderTopWidth: 0,
-        elevation: 0,
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-      },
-      tabBarBackground: () => (
-        <LinearGradient
-          colors={[Colors.GradientOrangeStart, Colors.GradientOrangeEnd]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={StyleSheet.absoluteFill}
-        />
-      ),
-      tabBarLabelStyle: tabStyles.label,
-      tabBarActiveBackgroundColor: "rgba(255, 255, 255, 0.2)",
-      tabBarItemStyle: tabStyles.item,
-      tabBarIcon: ({ color }) => {
-        const iconSize = 24;
-        switch (route.name) {
-          case "Home":
-            return <Feather name="home" size={iconSize} color={color} />;
-          case "Scan":
-            return (
-              <Ionicons name="scan-outline" size={iconSize} color={color} />
-            );
-          case "Report":
-            return (
-              <Ionicons
-                name="document-text-outline"
-                size={iconSize}
-                color={color}
-              />
-            );
-          case "Profile":
-            return (
-              <Ionicons name="person-outline" size={iconSize} color={color} />
-            );
-          default:
-            return null;
-        }
-      },
-    })}
+    screenOptions={({ route }) => {
+      // Get the focused route name from nested stack navigators
+      const routeName = getFocusedRouteNameFromRoute(route);
+      const shouldHideTabBar = routeName === 'ChatScreen';
+      
+      return {
+        headerShown: false,
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: Colors.WhiteColor,
+        tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
+        tabBarStyle: shouldHideTabBar ? { display: 'none' } : {
+          ...tabStyles.tabBar,
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+          elevation: 0,
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+        },
+        tabBarBackground: () => (
+          <LinearGradient
+            colors={[Colors.GradientOrangeStart, Colors.GradientOrangeEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+        ),
+        tabBarLabelStyle: tabStyles.label,
+        tabBarActiveBackgroundColor: "rgba(255, 255, 255, 0.2)",
+        tabBarItemStyle: tabStyles.item,
+        tabBarIcon: ({ color }) => {
+          const iconSize = 24;
+          switch (route.name) {
+            case "Home":
+              return <Feather name="home" size={iconSize} color={color} />;
+            case "Scan":
+              return (
+                <Ionicons name="scan-outline" size={iconSize} color={color} />
+              );
+            case "Report":
+              return (
+                <Ionicons
+                  name="document-text-outline"
+                  size={iconSize}
+                  color={color}
+                />
+              );
+            case "Profile":
+              return (
+                <Ionicons name="person-outline" size={iconSize} color={color} />
+              );
+            default:
+              return null;
+          }
+        },
+      };
+    }}
   >
     <BottomTabs.Screen name="Home" component={DashboardStackNavigator} />
     <BottomTabs.Screen name="Scan" component={ScanStackNavigator} />

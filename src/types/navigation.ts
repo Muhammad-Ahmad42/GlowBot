@@ -20,4 +20,5 @@ export type RootStackParamList = {
     Reminders: undefined;
     AllScans: undefined;
     ScanResult: { scanId?: string } | undefined;
+    ChatScreen: { connectionId: string; expertName: string; expertAvatar?: string } | undefined;
 };

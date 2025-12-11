@@ -17,6 +17,7 @@ import RemindersScreen from "./report/RemindersScreen";
 import TermsConditionsScreen from "./profile/TermsConditionsScreen";
 import AllScansScreen from "./scan/AllScansScreen";
 import ScanResultScreen from "./scan/ScanResultScreen";
+import ChatScreen from "./chat/ChatScreen";
 
 export {
     LoginScreen,
@@ -37,5 +38,7 @@ export {
     WeeklyScanScreen,
     RemindersScreen,
     AllScansScreen,
-    ScanResultScreen
+    ScanResultScreen,
+    ChatScreen
 };
+
