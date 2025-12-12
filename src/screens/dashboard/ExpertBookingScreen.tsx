@@ -79,17 +79,41 @@ const ExpertBookingScreen = () => {
     }
   };
 
+  const handleDisconnect = (expertId: string) => {
+    const connection = getConnectionByExpert(expertId);
+    if (!connection) return;
+
+    Alert.alert(
+      "Disconnect",
+      "Are you sure you want to disconnect from this expert?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Disconnect", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await useConnectionStore.getState().disconnectExpert(connection.id);
+            } catch (error) {
+              Alert.alert("Error", "Failed to disconnect");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const getButtonConfig = (expertId: string, isAvailable: boolean) => {
     const status = getConnectionStatus(expertId);
     
     if (status === 'accepted') {
-      return { text: 'Chat', onPress: () => handleChatPress(expertId), disabled: false, style: styles.chatButton };
+      return { text: 'Chat', onPress: () => handleChatPress(expertId), disabled: false, style: styles.chatButton, showDisconnect: true };
     } else if (status === 'pending') {
-      return { text: 'Pending...', onPress: () => {}, disabled: true, style: styles.pendingButton };
+      return { text: 'Pending...', onPress: () => {}, disabled: true, style: styles.pendingButton, showDisconnect: true };
     } else if (connectingExpertId === expertId) {
-      return { text: 'Connecting...', onPress: () => {}, disabled: true, style: styles.bookButton };
+      return { text: 'Connecting...', onPress: () => {}, disabled: true, style: styles.bookButton, showDisconnect: false };
     } else {
-      return { text: 'Connect', onPress: () => handleConnectPress(expertId), disabled: !isAvailable, style: isAvailable ? styles.bookButton : styles.disabledButton };
+      return { text: 'Connect', onPress: () => handleConnectPress(expertId), disabled: !isAvailable, style: isAvailable ? styles.bookButton : styles.disabledButton, showDisconnect: false };
     }
   };
 
@@ -126,15 +150,25 @@ const ExpertBookingScreen = () => {
               {item.available ? "Available Today" : "Next Available: Mon"}
             </Text>
           </View>
-          <TouchableOpacity 
-            style={[styles.bookButton, buttonConfig.style]} 
-            disabled={buttonConfig.disabled}
-            onPress={buttonConfig.onPress}
-          >
-            <Text style={styles.bookButtonText}>
-              {buttonConfig.text}
-            </Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {buttonConfig.showDisconnect && (
+                <TouchableOpacity 
+                    style={[styles.disconnectButton, { marginRight: 8 }]} 
+                    onPress={() => handleDisconnect(item.id)}
+                >
+                    <Ionicons name="close" size={16} color={Colors.StatusBadText} />
+                </TouchableOpacity>
+            )}
+            <TouchableOpacity 
+                style={[styles.bookButton, buttonConfig.style]} 
+                disabled={buttonConfig.disabled}
+                onPress={buttonConfig.onPress}
+            >
+                <Text style={styles.bookButtonText}>
+                {buttonConfig.text}
+                </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -381,6 +415,13 @@ const styles = StyleSheet.create({
   emptyText: {
       color: Colors.textSecondary,
       fontSize: textScale(14),
+  },
+  disconnectButton: {
+      padding: ms(8),
+      backgroundColor: '#FFEBEE', // Light red
+      borderRadius: ms(20),
+      justifyContent: 'center',
+      alignItems: 'center'
   }
 });
 

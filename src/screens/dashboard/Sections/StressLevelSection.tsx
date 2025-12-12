@@ -24,6 +24,14 @@ const StressLevelSection: React.FC<Props> = ({
 
   const currentLevel = getStressLevel(value);
 
+  const getStressInfo = (val: number) => {
+    if (val < 30) return "Great! Your stress levels are optimal for healthy skin.";
+    if (val <= 70) return "Moderate stress signs detected. Consider some relaxation.";
+    return "High stress detected. Your skin is showing signs of fatigue.";
+  };
+
+  const stressInfo = getStressInfo(value);
+
   return (
     <View style={styles.sectionContainer}>
       <View style={styles.sectionHeader}>
@@ -55,7 +63,7 @@ const StressLevelSection: React.FC<Props> = ({
       </View>
 
       <Text style={styles.infoText}>
-        Great! Your stress levels are optimal for healthy skin.
+        {stressInfo}
       </Text>
 
       <GlowButton

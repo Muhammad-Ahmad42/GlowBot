@@ -42,12 +42,30 @@ interface ConnectionState {
   getConnectionByExpert: (expertId: string) => ConnectionRequest | undefined;
   fetchMessages: (connectionId: string) => Promise<void>;
   sendMessage: (connectionId: string, text: string, senderId: string, image?: string) => Promise<void>;
+  disconnectExpert: (connectionId: string) => Promise<void>;
 }
 
 export const useConnectionStore = create<ConnectionState>((set, get) => ({
   connections: [],
   messages: {},
   loading: false,
+
+  disconnectExpert: async (connectionId: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/connections/${connectionId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) throw new Error('Failed to disconnect');
+      
+      set((state) => ({
+        connections: state.connections.filter(c => c.id !== connectionId)
+      }));
+    } catch (error) {
+        console.error('Error disconnecting:', error);
+        throw error;
+    }
+  },
 
   fetchMyConnections: async (userId: string) => {
     set({ loading: true });

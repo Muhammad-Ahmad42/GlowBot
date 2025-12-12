@@ -12,13 +12,14 @@ import { verticalScale } from "react-native-size-matters";
 import Colors from "../../utils/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuthStore } from "../../store/AuthStore";
-import { useDashboardStore } from "../../store/DashboardStore";
+  import { useDashboardStore } from "../../store/DashboardStore";
 import drawable from "../../utils/drawable";
 import { useNavigation } from "@react-navigation/native";
 import { DietTipSection, ExpertSection, LatestSkinScanSection, StressLevelSection } from "./Sections";
 import { Header, SafeScreen, Tabs, NotificationPanel } from "@/src/components";
 import { socketService } from "../../services/SocketService";
 import { useReminderStore } from "../../store/ReminderStore";
+import { useConnectionStore } from "../../store/ConnectionStore";
 
 function DashboardScreen() {
   const { user } = useAuthStore();
@@ -31,6 +32,8 @@ function DashboardScreen() {
     fetchExperts, 
     fetchDietPlan 
   } = useDashboardStore();
+  const { fetchMyConnections } = useConnectionStore();
+  
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState("Skin");
   const [notificationPanelVisible, setNotificationPanelVisible] = useState(false);
@@ -43,6 +46,9 @@ function DashboardScreen() {
     fetchScanHistory(userId);
     fetchExperts();
     fetchDietPlan(userId);
+    if (user?.uid) {
+        fetchMyConnections(user.uid);
+    }
 
     // Setup Real-time Updates
     if (user?.uid) {

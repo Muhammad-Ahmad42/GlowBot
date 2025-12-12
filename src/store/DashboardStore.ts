@@ -73,7 +73,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
               day: new Date(scan.createdAt).toLocaleDateString('en-US', { weekday: 'short' }),
               level: stressValue > 70 ? "High" : stressValue > 40 ? "Med" : "Low",
               value: stressValue,
-              details: "Recorded from scan"
+              details: scan?.analysis?.stress_factors?.join(", ") || "Recorded from scan"
             };
           }).reverse(),
           stressLevel: {
