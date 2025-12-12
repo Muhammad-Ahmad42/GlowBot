@@ -6,6 +6,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import GlowButton from "@/src/components/GlowButton";
 import { DIET_ITEMS_CONFIG, CATEGORY_CONFIG, getDietItemConfig } from "@/src/store/DietStore";
 
+const STATIC_ICONS = [
+  { name: "food-apple", color: "#FF6B6B" },
+  { name: "leaf", color: "#4CAF50" },
+  { name: "water", color: "#2196F3" },
+];
+
 interface Props {
   title: string;
   mainTip: string;
@@ -46,16 +52,19 @@ const DietTipSection: React.FC<Props> = ({
 
       <View style={styles.itemsRow}>
         {items.slice(0, 3).map((itemName, index) => {
-          const config = getDietItemConfig(itemName);
+          // Use static icon based on index, loop if more than 3
+          const iconConfig = STATIC_ICONS[index % STATIC_ICONS.length];
           return (
             <View key={index} style={styles.itemContainer}>
               <MaterialCommunityIcons
-                name={config.icon as any}
-                size={20}
-                color={config.color}
+                name={iconConfig.name as any}
+                size={24}
+                color={iconConfig.color}
                 style={{ marginBottom: 5 }}
               />
-              <Text style={styles.itemText}>{itemName}</Text>
+              <Text style={[styles.itemText, { color: Colors.textPrimary }]} numberOfLines={1}>
+                {itemName}
+              </Text>
             </View>
           );
         })}

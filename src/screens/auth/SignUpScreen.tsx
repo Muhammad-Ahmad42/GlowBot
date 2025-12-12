@@ -54,9 +54,18 @@ const SignUpScreen = () => {
 
   const handleSignUp = async (values: any, setSubmitting: any) => {
     try {
-      // In a real app, you would upload the image here and get a URL
-      // For now, we just pass the local URI if needed, or handle it in the store
-      await signUp(values.name, values.email, values.password, image);
+      if (image) {
+        try {
+          await signUp(values.name, values.email, values.password, image);
+
+        } catch (uploadError) {
+             console.log("Error in sign up flow", uploadError)
+             throw uploadError;
+        }
+      } else {
+          await signUp(values.name, values.email, values.password, null);
+      }
+
     } catch (error: any) {
       setErrorNotification({
         visible: true,

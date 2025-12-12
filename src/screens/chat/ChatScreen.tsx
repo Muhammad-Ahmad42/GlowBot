@@ -14,10 +14,12 @@ import { useConnectionStore, ChatMessage } from "../../store/ConnectionStore";
 import { useAuthStore } from "../../store/AuthStore";
 import { socketService } from "../../services/SocketService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import IncomingCallModal from "../../components/IncomingCallModal";
+import { CallRequestData } from "../../services/SocketService";
 
 const ChatScreen = () => {
   const route = useRoute<any>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { connectionId, expertName, expertAvatar } = route.params || {};
   const { user } = useAuthStore();
   const { messages, fetchMessages } = useConnectionStore();
@@ -29,6 +31,8 @@ const ChatScreen = () => {
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+
+  const [incomingCall, setIncomingCall] = useState<CallRequestData | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize socket and fetch initial messages
@@ -63,6 +67,10 @@ const ChatScreen = () => {
       }
     });
 
+    const unsubCallRequest = socketService.onCallRequest((data) => {
+      setIncomingCall(data);
+    });
+
     const unsubStopTyping = socketService.onStopTyping(({ userId }) => {
       if (userId !== user.uid) {
         setIsTyping(false);
@@ -74,7 +82,9 @@ const ChatScreen = () => {
       socketService.leaveRoom(connectionId);
       unsubMessage();
       unsubTyping();
+
       unsubStopTyping();
+      unsubCallRequest();
     };
   }, [connectionId, user?.uid]);
 
@@ -159,6 +169,35 @@ const ChatScreen = () => {
     ]);
   };
 
+  const handleVideoCall = () => {
+    navigation.navigate("CallScreen", {
+      connectionId,
+      otherUserId: 'expert_id_placeholder', // You might need to fetch this or pass it via params
+      otherUserName: expertName,
+      isCaller: true,
+    });
+  };
+
+  const handleAcceptCall = () => {
+    if (incomingCall) {
+      setIncomingCall(null);
+      navigation.navigate("CallScreen", {
+        connectionId: incomingCall.connectionId,
+        otherUserId: incomingCall.callerId,
+        otherUserName: expertName, // Ideally get name from callerId or look up
+        isCaller: false,
+        offer: incomingCall.offer
+      });
+    }
+  };
+
+  const handleRejectCall = () => {
+    if (incomingCall && user?.uid) {
+      socketService.sendCallRejected(incomingCall.connectionId, user.uid);
+      setIncomingCall(null);
+    }
+  };
+
   const renderMessageItem = ({ item }: { item: ChatMessage }) => {
     const isMe = item.senderType === 'user';
     return (
@@ -200,9 +239,23 @@ const ChatScreen = () => {
           centerTitle={false}
           containerStyle={styles.header}
           rightIcon={
-            <Ionicons name="ellipsis-vertical" size={24} color={Colors.textPrimary} />
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity onPress={handleVideoCall} style={{ marginRight: 15 }}>
+                <Ionicons name="videocam" size={24} color={Colors.textPrimary} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setModalVisible(true)}>
+                <Ionicons name="ellipsis-vertical" size={24} color={Colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
           }
-          onRightIconPress={() => setModalVisible(true)}
+          onRightIconPress={() => {}} // Hanlded individually
+        />
+
+        <IncomingCallModal 
+          visible={!!incomingCall}
+          callerName={expertName || "Dermatologist"} // Fallback or lookup
+          onAccept={handleAcceptCall}
+          onReject={handleRejectCall}
         />
 
         <EllipsisModal

@@ -8,7 +8,8 @@ import {
   User,
   onAuthStateChanged,
 } from "firebase/auth";
-import { auth } from "../config/firebase";
+import { auth, storage } from "../config/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface AuthState {
   user: User | null;
@@ -37,9 +38,27 @@ export const useAuthStore = create<AuthState>((set) => ({
         email,
         password
       );
+      let finalPhotoURL = photoURL;
+
+      if (photoURL && photoURL.startsWith('file://')) {
+         try {
+            const response = await fetch(photoURL);
+            const blob = await response.blob();
+            const filename = photoURL.substring(photoURL.lastIndexOf('/') + 1);
+            const storageRef = ref(storage, `profile_images/${userCredential.user.uid}/${filename}`);
+            
+            await uploadBytes(storageRef, blob);
+            finalPhotoURL = await getDownloadURL(storageRef);
+         } catch (e) {
+            console.error("Failed to upload image during signup", e);
+            // Fallback to null or keep local (which won't persist)
+            // Lets keep local so at least it shows for this session
+         }
+      }
+
       await updateProfile(userCredential.user, {
         displayName: name,
-        photoURL: photoURL || null,
+        photoURL: finalPhotoURL || null,
       });
 
       // Sync user to backend
@@ -53,7 +72,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             firebaseUid: userCredential.user.uid,
             email: email,
             displayName: name,
-            photoURL: photoURL || null,
+            photoURL: finalPhotoURL || null,
             profile: profile || {},
           }),
         });

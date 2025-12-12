@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     padding: ms(16),
     marginBottom: verticalScale(12),
     elevation: 2,
-    alignItems: "center", // Align center for row
+    alignItems: "center", 
   },
   mealIcon: {
     width: ms(64),

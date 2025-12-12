@@ -17,10 +17,8 @@ import drawable from "../../utils/drawable";
 import { useNavigation } from "@react-navigation/native";
 import { DietTipSection, ExpertSection, LatestSkinScanSection, StressLevelSection } from "./Sections";
 import { Header, SafeScreen, Tabs, NotificationPanel } from "@/src/components";
+import { socketService } from "../../services/SocketService";
 import { useReminderStore } from "../../store/ReminderStore";
-
-
-
 
 function DashboardScreen() {
   const { user } = useAuthStore();
@@ -45,7 +43,30 @@ function DashboardScreen() {
     fetchScanHistory(userId);
     fetchExperts();
     fetchDietPlan(userId);
-  }, []);
+
+    // Setup Real-time Updates
+    if (user?.uid) {
+      socketService.joinUserChannel(user.uid);
+
+      // Listen for new experts/updates
+      const cleanupExperts = socketService.onExpertsUpdated(() => {
+        console.log("Real-time expert update received");
+        fetchExperts();
+      });
+
+      // Listen for connection request status changes
+      const cleanupStatus = socketService.onRequestStatusUpdated((data) => {
+        console.log("Real-time status update received:", data);
+        fetchExperts(); // Refresh experts to update button states (Pending -> Chat)
+        // Optionally show a toast/notification here
+      });
+
+      return () => {
+        cleanupExperts();
+        cleanupStatus();
+      };
+    }
+  }, [user?.uid]);
 
   const availableExpert = experts.length > 0 
     ? (experts.find((e) => e.available) || experts[0]) 
@@ -89,7 +110,6 @@ function DashboardScreen() {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
           <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
-          {/* Skin Scan Card - Full Width */}
           <TouchableOpacity style={styles.fullWidthCardWrapper} onPress={() => {navigation.navigate("Scan")}}>
             <LinearGradient
               colors={[Colors.GradientOrangeStart, Colors.GradientOrangeEnd]}
@@ -113,7 +133,6 @@ function DashboardScreen() {
             
           </TouchableOpacity>
 
-          {/* Latest Skin Scan Section */}
           <LatestSkinScanSection
             latestScanTime={latestScan.time || "No scans yet"}
             skinAnalysis={latestScan.skinAnalysis}
@@ -132,9 +151,6 @@ function DashboardScreen() {
           items={dietTip.items || []}
           onPressButton={() => navigation.navigate("DietPlan")}
         />
-
-
-          {/* Expert Section */}
       <ExpertSection
         expertName={availableExpert.name}
         subtitle={availableExpert.description}
@@ -142,7 +158,6 @@ function DashboardScreen() {
         online={availableExpert.available}
         onPressButton={() => navigation.navigate("ExpertBooking")}
       />
-
         </ScrollView>
       </View>
       <NotificationPanel

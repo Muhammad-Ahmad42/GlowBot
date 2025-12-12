@@ -21,7 +21,8 @@ import Colors from "../../utils/Colors";
 import { horizontalScale, verticalScale, textScale, ms } from "../../utils/SizeScalingUtility";
 import { useAuthStore } from "../../store/AuthStore";
 import { updateProfile } from "firebase/auth";
-import { auth } from "../../config/firebase";
+import { auth, storage } from "../../config/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Validation schema
 const personalInfoSchema = Yup.object().shape({
@@ -55,22 +56,62 @@ const PersonalInformationScreen = () => {
 
       // Update Firebase Auth profile
       if (auth.currentUser) {
+        let photoURL = profileImage;
+
+        // Upload image if it's a local URI
+        if (profileImage && profileImage.startsWith('file://')) {
+          try {
+            const response = await fetch(profileImage);
+            const blob = await response.blob();
+            const filename = profileImage.substring(profileImage.lastIndexOf('/') + 1);
+            const storageRef = ref(storage, `profile_images/${auth.currentUser.uid}/${filename}`);
+            
+            await uploadBytes(storageRef, blob);
+            photoURL = await getDownloadURL(storageRef);
+          } catch (uploadError) {
+            console.error("Image upload failed:", uploadError);
+            Alert.alert("Warning", "Failed to upload profile image. Changes may not be saved.");
+            // Proceed with existing photoURL or null if upload fails? 
+            // Better to keep local URI effectively failing persistence but not crashing flow?
+            // Or maybe return/throw?
+            // For now, let's process with what we have, but it won't persist if it's file://
+          }
+        }
+
         await updateProfile(auth.currentUser, {
           displayName: values.displayName,
-          photoURL: profileImage,
+          photoURL: photoURL,
         });
+
+         // Sync user to backend
+         try {
+          const response = await fetch('http://192.168.18.225:5501/users', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              firebaseUid: auth.currentUser.uid,
+              email: auth.currentUser.email,
+              displayName: values.displayName,
+              photoURL: photoURL || null,
+              profile: {
+                phoneNumber: values.phoneNumber,
+                dateOfBirth: values.dateOfBirth,
+                gender: values.gender,
+              }
+            }),
+          });
+  
+          if (!response.ok) {
+            console.warn('Failed to sync user to backend:', await response.text());
+          }
+        } catch (syncError) {
+          console.error('Error syncing user to backend:', syncError);
+        }
 
         // Update local user state
         setUser(auth.currentUser);
-
-        // Here you would typically also save additional fields (phone, DOB, gender)
-        // to Firestore or your database
-        // Example:
-        // await updateDoc(doc(db, "users", auth.currentUser.uid), {
-        //   phoneNumber: values.phoneNumber,
-        //   dateOfBirth: values.dateOfBirth,
-        //   gender: values.gender,
-        // });
 
         Alert.alert(
           "Success",

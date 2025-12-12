@@ -30,7 +30,9 @@ import {
   RemindersScreen,
   AllScansScreen,
   ScanResultScreen,
+
   ChatScreen,
+  CallScreen,
 } from "../screens";
 import { RootStackParamList } from "../types/navigation";
 import { useAuthStore } from "../store/AuthStore";
@@ -66,6 +68,7 @@ const DashboardStackNavigator = () => (
     <DashboardStack.Screen name="DietPlan" component={DietPlanScreen} />
     <DashboardStack.Screen name="StressHistory" component={StressHistoryScreen} />
     <DashboardStack.Screen name="ChatScreen" component={ChatScreen} />
+    <DashboardStack.Screen name="CallScreen" component={CallScreen} />
   </DashboardStack.Navigator>
 );
 
