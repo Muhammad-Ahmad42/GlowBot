@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, FlatList, TextInput, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, FlatList, TextInput, Alert, Modal } from "react-native";
 import { SafeScreen, Header, CustomModal } from "@/src/components";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -18,6 +18,7 @@ const ExpertBookingScreen = () => {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedExpert, setSelectedExpert] = useState<any>(null);
   const [connectingExpertId, setConnectingExpertId] = useState<string | null>(null);
 
@@ -35,6 +36,11 @@ const ExpertBookingScreen = () => {
   const handleExpertPress = (expert: any) => {
     setSelectedExpert(expert);
     setModalVisible(true);
+  };
+
+  const handleExpertLongPress = (expert: any) => {
+    setSelectedExpert(expert);
+    setDetailModalVisible(true);
   };
 
   const handleConnectPress = async (expertId: string) => {
@@ -121,7 +127,12 @@ const ExpertBookingScreen = () => {
     const buttonConfig = getButtonConfig(item.id, item.available);
     
     return (
-      <TouchableOpacity style={styles.card} onPress={() => handleExpertPress(item)}>
+      <TouchableOpacity 
+        style={styles.card} 
+        onPress={() => handleExpertPress(item)}
+        onLongPress={() => handleExpertLongPress(item)}
+        delayLongPress={500}
+      >
         <View style={styles.cardHeader}>
           <Image 
             source={item.imageUrl ? { uri: item.imageUrl } : drawable.reactLogo} 
@@ -242,6 +253,73 @@ const ExpertBookingScreen = () => {
             iconColor={Colors.StatusGoodText}
             buttonText="Close"
         />
+
+        <Modal
+            visible={detailModalVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setDetailModalVisible(false)}
+        >
+            <View style={styles.detailModalOverlay}>
+                <View style={styles.detailModalContainer}>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        <Image 
+                            source={selectedExpert?.imageUrl ? { uri: selectedExpert.imageUrl } : drawable.reactLogo}
+                            style={styles.detailAvatar}
+                        />
+                        <Text style={styles.detailName}>{selectedExpert?.name}</Text>
+                        <Text style={styles.detailSpecialty}>{selectedExpert?.specialty}</Text>
+                        <Text style={styles.detailDescription}>{selectedExpert?.description}</Text>
+                        
+                        <View style={styles.detailDivider} />
+                        
+                        <View style={styles.detailRow}>
+                            <Ionicons name="medical" size={18} color={Colors.ButtonPink} />
+                            <Text style={styles.detailLabel}>License:</Text>
+                            <Text style={styles.detailValue}>{selectedExpert?.medicalLicenseNumber || 'N/A'}</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Ionicons name="time" size={18} color={Colors.ButtonPink} />
+                            <Text style={styles.detailLabel}>Experience:</Text>
+                            <Text style={styles.detailValue}>{selectedExpert?.yearsOfExperience || 'N/A'} years</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Ionicons name="location" size={18} color={Colors.ButtonPink} />
+                            <Text style={styles.detailLabel}>Clinic:</Text>
+                            <Text style={styles.detailValue}>{selectedExpert?.clinicAddress || 'N/A'}</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Ionicons name="cash" size={18} color={Colors.ButtonPink} />
+                            <Text style={styles.detailLabel}>Fee:</Text>
+                            <Text style={styles.detailValue}>{selectedExpert?.fee || 'N/A'}</Text>
+                        </View>
+
+                        <View style={styles.detailDivider} />
+                        
+                        <Text style={styles.availabilityTitle}>Availability</Text>
+                        <View style={styles.availabilityDays}>
+                            {selectedExpert?.availability?.days?.length > 0 ? (
+                                selectedExpert.availability.days.map((day: string) => (
+                                    <View key={day} style={styles.availabilityChip}>
+                                        <Text style={styles.availabilityChipText}>{day}</Text>
+                                    </View>
+                                ))
+                            ) : (
+                                <Text style={styles.detailValue}>Not specified</Text>
+                            )}
+                        </View>
+                        {selectedExpert?.availability?.startTime && (
+                            <Text style={styles.availabilityTime}>
+                                {selectedExpert.availability.startTime} - {selectedExpert.availability.endTime}
+                            </Text>
+                        )}
+                    </ScrollView>
+                    <TouchableOpacity style={styles.closeButton} onPress={() => setDetailModalVisible(false)}>
+                        <Text style={styles.closeButtonText}>Close</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
       </View>
     </SafeScreen>
   );
@@ -418,11 +496,112 @@ const styles = StyleSheet.create({
   },
   disconnectButton: {
       padding: ms(8),
-      backgroundColor: '#FFEBEE', // Light red
+      backgroundColor: '#FFEBEE',
       borderRadius: ms(20),
       justifyContent: 'center',
       alignItems: 'center'
-  }
+  },
+  detailModalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: horizontalScale(20),
+  },
+  detailModalContainer: {
+      backgroundColor: Colors.WhiteColor,
+      borderRadius: ms(20),
+      padding: ms(20),
+      width: '100%',
+      maxHeight: '80%',
+  },
+  detailAvatar: {
+      width: ms(80),
+      height: ms(80),
+      borderRadius: ms(40),
+      alignSelf: 'center',
+      marginBottom: verticalScale(10),
+  },
+  detailName: {
+      fontSize: textScale(20),
+      fontWeight: 'bold',
+      color: Colors.textPrimary,
+      textAlign: 'center',
+  },
+  detailSpecialty: {
+      fontSize: textScale(14),
+      color: Colors.ButtonPink,
+      textAlign: 'center',
+      marginBottom: verticalScale(8),
+  },
+  detailDescription: {
+      fontSize: textScale(13),
+      color: Colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: verticalScale(15),
+  },
+  detailDivider: {
+      height: 1,
+      backgroundColor: Colors.border,
+      marginVertical: verticalScale(12),
+  },
+  detailRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: verticalScale(8),
+  },
+  detailLabel: {
+      fontSize: textScale(13),
+      fontWeight: '600',
+      color: Colors.textPrimary,
+      marginLeft: horizontalScale(8),
+      marginRight: horizontalScale(4),
+  },
+  detailValue: {
+      fontSize: textScale(13),
+      color: Colors.textSecondary,
+      flex: 1,
+  },
+  availabilityTitle: {
+      fontSize: textScale(15),
+      fontWeight: '700',
+      color: Colors.textPrimary,
+      marginBottom: verticalScale(10),
+  },
+  availabilityDays: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: ms(6),
+      marginBottom: verticalScale(10),
+  },
+  availabilityChip: {
+      backgroundColor: Colors.ButtonPink,
+      paddingHorizontal: horizontalScale(10),
+      paddingVertical: verticalScale(5),
+      borderRadius: ms(12),
+  },
+  availabilityChipText: {
+      fontSize: textScale(12),
+      color: Colors.WhiteColor,
+      fontWeight: '500',
+  },
+  availabilityTime: {
+      fontSize: textScale(14),
+      color: Colors.textPrimary,
+      fontWeight: '600',
+  },
+  closeButton: {
+      backgroundColor: Colors.ButtonPink,
+      paddingVertical: verticalScale(12),
+      borderRadius: ms(12),
+      marginTop: verticalScale(15),
+  },
+  closeButtonText: {
+      color: Colors.WhiteColor,
+      fontSize: textScale(14),
+      fontWeight: '600',
+      textAlign: 'center',
+  },
 });
 
 export default ExpertBookingScreen;

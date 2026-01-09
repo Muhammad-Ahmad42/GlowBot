@@ -23,6 +23,7 @@ import {
   CustomPrimaryButton,
 } from "../../components";
 import { useAuthStore } from "../../store/AuthStore";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface LoginFormValues {
   email: string;
@@ -32,6 +33,7 @@ interface LoginFormValues {
 const LoginScreen = () => {
   const navigation = useNavigation<any>();
   const { login, loading } = useAuthStore();
+  const insets = useSafeAreaInsets();
 
   const [errorNotification, setErrorNotification] = useState({
     visible: false,
@@ -58,7 +60,7 @@ const LoginScreen = () => {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
       <LinearGradient
         colors={[Colors.AuthBackgroundStart, Colors.AuthBackgroundEnd]}
-        style={styles.container}
+        style={[styles.container, { paddingBottom: insets.bottom + verticalScale(20) }]}
       >
         <StatusBar barStyle="dark-content" />
         <Text style={styles.heading}>GlowBot</Text>
@@ -163,6 +165,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: horizontalScale(20),
+    paddingBottom: verticalScale(20),
   },
   heading: {
     fontSize: textScale(32),

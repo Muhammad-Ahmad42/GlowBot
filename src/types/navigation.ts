@@ -21,4 +21,11 @@ export type RootStackParamList = {
     AllScans: undefined;
     ScanResult: { scanId?: string } | undefined;
     ChatScreen: { connectionId: string; expertName: string; expertAvatar?: string } | undefined;
+    CallScreen: {
+        connectionId: string;
+        isCaller: boolean;
+        otherUserName: string;
+        otherUserId?: string;
+        offer?: any;
+    } | undefined;
 };

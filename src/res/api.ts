@@ -1,4 +1,4 @@
-export const BASE_URL = "http://192.168.18.69:5501";
+export const BASE_URL = "http://192.168.18.225:5501";
 
 export const ENDPOINTS = {
     ANALYZE: `${BASE_URL}/analyze`,

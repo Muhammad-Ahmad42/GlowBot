@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import Colors from "@/src/utils/Colors";
 import { ms, textScale, verticalScale } from "@/src/utils/SizeScalingUtility";
 import { FontAwesome } from "@expo/vector-icons";
@@ -13,6 +13,7 @@ interface Props {
   online?: boolean;
   avatarBgColor?: string;
   buttonGradientColors?: readonly [string, string, ...string[]];
+  imageUrl?: string;
 }
 
 const ExpertSection: React.FC<Props> = ({
@@ -23,12 +24,17 @@ const ExpertSection: React.FC<Props> = ({
   online = true,
   avatarBgColor = "#BA68C8",
   buttonGradientColors = [Colors.ExpertButton, Colors.ExpertButton],
+  imageUrl,
 }) => {
   return (
     <View style={[styles.sectionContainer, { backgroundColor: Colors.ExpertCardBg }]}>
       <View style={styles.headerRow}>
         <View style={[styles.avatarCircle, { backgroundColor: avatarBgColor }]}>
-          <FontAwesome name="user-md" size={24} color="white" />
+           {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.avatarImage} />
+           ) : (
+              <FontAwesome name="user-md" size={24} color="white" />
+           )}
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.expertName}>Expert Available</Text>
@@ -89,4 +95,9 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginBottom: 20,
   },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 25,
+  }
 });

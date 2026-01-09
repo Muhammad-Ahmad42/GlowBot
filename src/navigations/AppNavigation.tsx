@@ -2,11 +2,11 @@ import React, { useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import * as NavigationBar from "expo-navigation-bar";
 import Colors from "../utils/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -128,7 +128,9 @@ const tabStyles = StyleSheet.create({
   },
 });
 
-const BottomTabNavigator = () => (
+const BottomTabNavigator = () => {
+  const insets = useSafeAreaInsets();
+  return (
   <BottomTabs.Navigator
     screenOptions={({ route }) => {
       // Get the focused route name from nested stack navigators
@@ -138,6 +140,7 @@ const BottomTabNavigator = () => (
       return {
         headerShown: false,
         tabBarShowLabel: true,
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: Colors.WhiteColor,
         tabBarInactiveTintColor: "rgba(255, 255, 255, 0.6)",
         tabBarStyle: shouldHideTabBar ? { display: 'none' } : {
@@ -149,6 +152,8 @@ const BottomTabNavigator = () => (
           bottom: 0,
           left: 0,
           right: 0,
+          height: 70 + insets.bottom,
+          paddingBottom: 6 + insets.bottom,
         },
         tabBarBackground: () => (
           <LinearGradient
@@ -194,20 +199,28 @@ const BottomTabNavigator = () => (
     <BottomTabs.Screen name="Report" component={ReportStackNavigator} />
     <BottomTabs.Screen name="Profile" component={ProfileStackNavigator} />
   </BottomTabs.Navigator>
-);
+  );
+};
 
 /* ---------------------- ROOT NAVIGATION ---------------------- */
 const AppNavigator: React.FC = () => {
-  const { user } = useAuthStore();
-
+  const { user, initializeAuth } = useAuthStore();
+  
   useEffect(() => {
-    if (user) {
-      NavigationBar.setVisibilityAsync("hidden");
-      // NavigationBar.setBehaviorAsync("overlay-swipe"); // Not supported with edge-to-edge
-    } else {
-      NavigationBar.setVisibilityAsync("visible");
-    }
-  }, [user]);
+    const unsubscribe = initializeAuth();
+    return () => {
+        if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  // Removed NavigationBar visibility logic to prevent keyboard conflicts
+  // useEffect(() => {
+  //   if (user) {
+  //     NavigationBar.setVisibilityAsync("hidden");
+  //   } else {
+  //     NavigationBar.setVisibilityAsync("visible");
+  //   }
+  // }, [user]);
 
   return (
     <>

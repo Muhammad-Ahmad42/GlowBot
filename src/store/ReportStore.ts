@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { scanUserImage } from "../services/ScanUserImageServic";
 import { BASE_URL } from "../res/api";
+import { useDashboardStore } from "./DashboardStore";
 
 interface ReportState {
   overallScore: number;
@@ -34,7 +35,7 @@ export const useReportStore = create<ReportState>((set) => ({
     Pigmentation: 0,
     Dullness: 0,
     Stress: 0,
-    Hydration: 0,
+    Dehydration: 0,
   },
   recommendedProducts: [],
   scanHistory: [],
@@ -85,6 +86,10 @@ export const useReportStore = create<ReportState>((set) => ({
     }
   },
   fetchUserProducts: async (userId: string) => {
+    if (userId === "anonymous") {
+        set({ addedProducts: [] });
+        return;
+    }
     try {
       const response = await fetch(`${BASE_URL}/user-products?userId=${userId}`);
       const userProducts = await response.json();
@@ -97,6 +102,20 @@ export const useReportStore = create<ReportState>((set) => ({
     }
   },
   fetchLatestReport: async (userId: string) => {
+    if (userId === "anonymous") {
+        set({ 
+            overallScore: 0,
+            skinAnalysis: {
+                Acne: 0,
+                Pigmentation: 0,
+                Dullness: 0,
+                Stress: 0,
+                Dehydration: 0,
+            },
+            recommendedProducts: [] 
+        });
+        return;
+    }
     try {
       // 1. Fetch latest scan
       const response = await fetch(`${BASE_URL}/scans?userId=${userId}`);
@@ -109,12 +128,9 @@ export const useReportStore = create<ReportState>((set) => ({
           overallScore: latest.analysis.overall_score,
           skinAnalysis: latest.analysis 
         });
-
-        // 3. Fetch AI-generated Diet Plan for products
         try {
             const dietResponse = await fetch(`${BASE_URL}/diet-plan?userId=${userId}`);
             const dietPlans = await dietResponse.json();
-            // Find the personalized plan related to this scan or the latest one
             const latestPlan = dietPlans.find((p: any) => p.planType === 'personalized') || dietPlans[0];
 
             if (latestPlan && latestPlan.recommendedProductIds && latestPlan.recommendedProductIds.length > 0) {
@@ -175,18 +191,33 @@ export const useReportStore = create<ReportState>((set) => ({
           Pigmentation: result.Pigmentation,
           Dullness: result.Dullness,
           Stress: result.Stress,
-          Hydration: result.Hydration,
+          Dehydration: result.Dehydration,
         },
         overallScore: result.overall_score,
       });
 
-      // Fetch ALL products so user can choose from the full catalog
+      // Sync with DashboardStore
+      useDashboardStore.getState().setStressLevel({
+        value: result.Stress,
+        connected: true
+      });
+      
+      useDashboardStore.getState().setLatestScan({
+        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+        skinAnalysis: {
+          Acne: result.Acne,
+          Pigmentation: result.Pigmentation,
+          Dullness: result.Dullness
+        }
+      });
+      
+      useDashboardStore.getState().fetchScanHistory(userId);
+
       const response = await fetch(`${BASE_URL}/products`);
       const allProducts = await response.json();
       set({ recommendedProducts: allProducts });
 
     } catch (error) {
-      // console.warn("Skin analysis failed:", error);
       throw error;
     }
   },

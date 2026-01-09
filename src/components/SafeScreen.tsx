@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { StatusBar, Platform, StatusBarStyle } from "react-native";
+import { Platform, StatusBar, StatusBarStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Colors from "../utils/Colors";
 
@@ -7,17 +7,19 @@ interface SafeScreenProps {
   children: ReactNode;
   backgroundColor?: string;
   barStyle?: StatusBarStyle;
+  edges?: ("top" | "right" | "bottom" | "left")[];
 }
 
 const SafeScreen: React.FC<SafeScreenProps> = ({
   children,
   backgroundColor = Colors.screenBackground,
   barStyle = "dark-content",
+  edges = ["top", "left", "right", "bottom"],
 }) => {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor }}
-      edges={["top", "left", "right"]}
+      edges={edges}
       pointerEvents="box-none"
     >
       <StatusBar

@@ -181,7 +181,7 @@ const ScanResultScreen = () => {
           <TouchableOpacity 
             style={styles.actionButton}
             onPress={() => {
-              navigation.navigate("Home", { screen: "DietPlan" });
+              navigation.navigate("Report", { screen: "ReportScreen" });
             }}
           >
             <LinearGradient
@@ -190,7 +190,7 @@ const ScanResultScreen = () => {
               end={{ x: 1, y: 0 }}
               style={styles.buttonGradient}
             >
-              <Text style={styles.buttonText}>View Full Diet Plan</Text>
+              <Text style={styles.buttonText}>View Full Report</Text>
               <Ionicons name="arrow-forward" size={20} color="white" />
             </LinearGradient>
           </TouchableOpacity>

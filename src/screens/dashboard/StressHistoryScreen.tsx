@@ -7,10 +7,18 @@ import Colors from "../../utils/Colors";
 import { useDashboardStore } from "../../store/DashboardStore";
 import { horizontalScale, ms, textScale, verticalScale } from "../../utils/SizeScalingUtility";
 
+import { Platform, ActivityIndicator } from "react-native";
+import { HealthService, HealthData } from "../../services/HealthService";
+import { StressService } from "../../services/StressService";
+import { useAuthStore } from "../../store/AuthStore";
+
 const StressHistoryScreen = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "", icon: "information-circle" as any });
+  const [todaysHealth, setTodaysHealth] = useState<HealthData | null>(null);
+  const [loadingHealth, setLoadingHealth] = useState(false);
+  const { user } = useAuthStore();
 
   const stressHistory = useDashboardStore((state) => state.stressHistory);
 
@@ -43,13 +51,101 @@ const StressHistoryScreen = () => {
     setModalVisible(true);
   };
 
-  const handleLogStress = () => {
-    setModalContent({
-      title: "Log Stress Level",
-      message: "This feature will allow you to record your daily stress levels and add notes.",
-      icon: "create",
-    });
-    setModalVisible(true);
+  const handleSyncHealth = async () => {
+    if (Platform.OS !== 'android') {
+      setModalContent({
+        title: "Not Supported",
+        message: "Health Connect is only available on Android.",
+        icon: "alert-circle" as any,
+      });
+      setModalVisible(true);
+      return;
+    }
+
+    if (!user) {
+      setModalContent({
+        title: "Not Logged In",
+        message: "Please log in to sync your health data.",
+        icon: "alert-circle" as any,
+      });
+      setModalVisible(true);
+      return;
+    }
+
+    setLoadingHealth(true);
+    try {
+      const isAvailable = await HealthService.checkAvailability();
+      if (!isAvailable) {
+        setModalContent({
+            title: "Health Connect Unavailable",
+            message: "Please ensure Health Connect is installed on your device.",
+            icon: "alert-circle" as any,
+        });
+        setModalVisible(true);
+        setLoadingHealth(false);
+        return;
+      }
+
+      const isInitialized = await HealthService.initialize();
+      if (!isInitialized) { 
+         // Try checking if it's just permissions
+         // initialize() usually involves ensuring the SDK is ready.
+      }
+
+      const hasPermissions = await HealthService.requestPermissions();
+      if (!hasPermissions) {
+        setModalContent({
+            title: "Permission Denied",
+            message: "We need access to your health data to calculate your stress score.",
+            icon: "lock-closed" as any,
+        });
+        setModalVisible(true);
+        setLoadingHealth(false);
+        return;
+      }
+
+      const data = await HealthService.getHealthData();
+      setTodaysHealth(data);
+      
+      // Check if data is actually valid (not all zeros)
+      const hasValidData = data.steps > 0 || data.heartRate > 0 || data.sleepHours > 0;
+      
+      if (!hasValidData) {
+        // Fallback to camera scan
+        setModalContent({
+          title: "No Health Data Available",
+          message: "Health Connect has no data for today. Would you like to use Camera Scan instead for stress analysis?",
+          icon: "camera" as any,
+        });
+        setModalVisible(true);
+        setLoadingHealth(false);
+        
+        // Optionally navigate to ScanScreen after user closes modal
+        // For now, just inform them
+        return;
+      }
+
+      // Save to backend
+      const saved = await StressService.logStressData(user.uid, data, 'health_connect');
+      
+      setModalContent({
+        title: saved ? "Sync Complete ✓" : "Sync Complete",
+        message: `Stress Level: ${data.stressLevel} (${data.stressLabel})\nHR: ${data.heartRate} bpm\nSleep: ${data.sleepHours} hrs\nSteps: ${data.steps}\n${saved ? '\nData saved to your profile.' : '\n(Could not save to server)'}`,
+        icon: "checkmark-circle" as any,
+      });
+      setModalVisible(true);
+
+    } catch (error) {
+        console.error("Sync error:", error);
+         setModalContent({
+            title: "Sync Failed",
+            message: "An error occurred while syncing health data. You can use Camera Scan instead.",
+            icon: "alert-circle" as any,
+        });
+        setModalVisible(true);
+    } finally {
+        setLoadingHealth(false);
+    }
   };
 
   return (
@@ -150,9 +246,10 @@ const StressHistoryScreen = () => {
           </TouchableOpacity>
 
           <GlowButton
-            title="Log Stress Level"
-            onPress={handleLogStress}
+            title={loadingHealth ? "Syncing..." : "Sync Health Data"}
+            onPress={handleSyncHealth}
             style={{ marginTop: verticalScale(20) }}
+            disabled={loadingHealth}
           />
 
         </ScrollView>

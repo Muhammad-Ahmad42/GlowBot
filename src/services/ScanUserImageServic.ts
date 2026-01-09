@@ -5,7 +5,7 @@ interface SkinAnalysisResult {
   Pigmentation: number;
   Dullness: number;
   Stress: number;
-  Hydration: number;
+  Dehydration: number;
   overall_score: number;
 }
 

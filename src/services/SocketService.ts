@@ -109,6 +109,14 @@ class SocketService {
     this.socket.on('error', (error: { message: string }) => {
       console.error('Socket error:', error.message);
     });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log('Socket reconnected after attempt', attemptNumber);
+    });
   }
 
   disconnect(): void {

@@ -35,12 +35,12 @@ const DETAILED_ANALYSIS_CONFIG: Record<
     iconType: "Ionicons",
     iconBg: "#E3F2FD",
   },
-  Hydration: {
-    subtitle: "Well moisturized",
-    color: "#0097A7",
+  Dehydration: {
+    subtitle: "Dryness levels",
+    color: "#FF7043", // Orange/Red indicating warning
     icon: "water",
     iconType: "Ionicons",
-    iconBg: "#E0F7FA",
+    iconBg: "#FBE9E7",
   },
 };
 
@@ -79,6 +79,18 @@ const DetailedAnalysisSection: React.FC<DetailedAnalysisSectionProps> = ({ skinA
     }
   };
 
+  const formatValue = (name: string, value: number) => {
+    if (name === "Acne") {
+        if (value >= 30) {
+            return `${value}%`;
+        } else {
+            const outOfFive = (value / 6).toFixed(1);
+            return `${outOfFive}/5`; 
+        }
+    }
+    return `${value}%`;
+  };
+
   return (
     <View style={styles.detailsCard}>
       <Text style={[styles.sectionTitle, { marginBottom: 20 }]}>Detailed Analysis</Text>
@@ -91,7 +103,7 @@ const DetailedAnalysisSection: React.FC<DetailedAnalysisSectionProps> = ({ skinA
           <View style={styles.detailContent}>
             <View style={styles.detailHeader}>
               <Text style={styles.detailTitle}>{item.name}</Text>
-              <Text style={[styles.detailValue, { color: item.color }]}>{item.value}</Text>
+              <Text style={[styles.detailValue, { color: item.color }]}>{formatValue(item.name, item.value)}</Text>
             </View>
             <Text style={styles.detailSubtitle}>{item.subtitle}</Text>
             <View style={styles.detailBarBg}>

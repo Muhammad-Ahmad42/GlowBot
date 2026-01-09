@@ -10,9 +10,7 @@ export const MEAL_TYPE_CONFIG: Record<string, { color: string; icon: string }> =
   Default: { color: '#E0E0E0', icon: 'food' },
 };
 
-// Centralized diet items configuration for food items (Dashboard DietTipSection)
 export const DIET_ITEMS_CONFIG: Record<string, { icon: string; color: string }> = {
-  // Fruits
   Lemon: { icon: 'fruit-citrus', color: '#FDD835' },
   Orange: { icon: 'fruit-citrus', color: '#FF9800' },
   Kiwi: { icon: 'leaf', color: '#8BC34A' },
@@ -44,21 +42,17 @@ export const DIET_ITEMS_CONFIG: Record<string, { icon: string; color: string }> 
   Default: { icon: 'food', color: '#9E9E9E' },
 };
 
-// Centralized category configuration for diet tips
 export const CATEGORY_CONFIG: Record<string, string> = {
   Nutrition: 'carrot',
   Health: 'heart-pulse',
   Lifestyle: 'run',
-  Hydration: 'water',
+  Dehydration: 'water',
   General: 'food-apple',
 };
 
-// Get config for a diet item
 export const getDietItemConfig = (itemName: string): { icon: string; color: string } => {
   return DIET_ITEMS_CONFIG[itemName] || DIET_ITEMS_CONFIG.Default;
 };
-
-// Get color for a meal type
 export const getMealColor = (mealType: string): string => {
   const config = MEAL_TYPE_CONFIG[mealType] || MEAL_TYPE_CONFIG.Default;
   return config.color;
@@ -91,7 +85,6 @@ interface DietState {
   loading: boolean;
   error: string | null;
   
-  // Actions
   fetchPlans: (userId: string) => Promise<void>;
   createPlan: (plan: Omit<DietPlan, '_id' | 'createdAt'>) => Promise<void>;
   updatePlan: (planId: string, updates: Partial<DietPlan>) => Promise<void>;

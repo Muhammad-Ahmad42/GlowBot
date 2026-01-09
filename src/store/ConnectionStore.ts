@@ -118,7 +118,6 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
       if (!response.ok) {
         const errorData = await response.json();
         if (response.status === 409) {
-          // Request already exists
           return errorData.request;
         }
         throw new Error(errorData.error || 'Failed to send connection request');

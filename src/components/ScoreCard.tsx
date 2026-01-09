@@ -6,7 +6,7 @@ import { ms, textScale, verticalScale } from "../utils/SizeScalingUtility";
 interface ScoreCardProps {
   overallScore: number;
   skinAnalysis: {
-    Hydration?: number;
+    Dehydration?: number;
     Acne?: number;
     Dullness?: number;
     [key: string]: any;
@@ -26,8 +26,8 @@ const ScoreCard = ({ overallScore, skinAnalysis }: ScoreCardProps) => (
     </View>
     <View style={styles.metricsRow}>
       <View style={styles.metricItem}>
-        <Text style={styles.metricLabel}>Hydration</Text>
-        <Text style={styles.metricValue}>{skinAnalysis?.Hydration ?? 0}%</Text>
+        <Text style={styles.metricLabel}>Dehydration</Text>
+        <Text style={styles.metricValue}>{skinAnalysis?.Dehydration ?? 0}%</Text>
       </View>
       <View style={styles.metricItem}>
         <Text style={styles.metricLabel}>Acne</Text>

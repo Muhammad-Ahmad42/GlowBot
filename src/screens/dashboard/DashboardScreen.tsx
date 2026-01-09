@@ -94,6 +94,24 @@ function DashboardScreen() {
     { name: "Experts", icon: "medkit-outline" },
   ];
 
+  const handleTabPress = (tabName: string) => {
+    if (tabName === "Skin") {
+      setActiveTab("Skin");
+    } else {
+      switch (tabName) {
+        case "Stress":
+          navigation.navigate("StressHistory");
+          break;
+        case "Diet":
+          navigation.navigate("DietPlan");
+          break;
+        case "Experts":
+          navigation.navigate("ExpertBooking");
+          break;
+      }
+    }
+  };
+
   const renderNotificationIcon = (
     <View style={styles.notificationButton}>
       <FontAwesome name="bell" size={20} color={Colors.textPrimary} />
@@ -114,7 +132,7 @@ function DashboardScreen() {
         />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
-          <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+          <Tabs tabs={tabs} activeTab={activeTab} onChange={handleTabPress} />
 
           <TouchableOpacity style={styles.fullWidthCardWrapper} onPress={() => {navigation.navigate("Scan")}}>
             <LinearGradient
@@ -162,6 +180,7 @@ function DashboardScreen() {
         subtitle={availableExpert.description}
         buttonTitle="Book Consultation"
         online={availableExpert.available}
+        imageUrl={(availableExpert as any).imageUrl}
         onPressButton={() => navigation.navigate("ExpertBooking")}
       />
         </ScrollView>

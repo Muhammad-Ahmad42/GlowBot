@@ -76,7 +76,7 @@ const ProfileScreen = () => {
             <MenuOption
               icon={<Ionicons name="person-outline" size={22} color="#4CAF50" />}
               title="Personal Information"
-              subtitle="Update your details"
+              subtitle="View your details"
               onPress={() => navigation.navigate("PersonalInformation")}
             />
             <MenuOption

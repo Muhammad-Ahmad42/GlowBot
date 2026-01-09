@@ -36,6 +36,9 @@ export const SignUpValidationSchema = Yup.object().shape({
     .max(120, "Enter a valid age")
     .required("Age is required *"),
   dob: Yup.date().required("Date of Birth is required").nullable(),
+  phoneNumber: Yup.string()
+    .matches(/^[0-9]{10,15}$/, "Phone number must be 10-15 digits")
+    .required("Phone number is required *"),
 });
 
 export const ForgotPasswordSchema = Yup.object().shape({

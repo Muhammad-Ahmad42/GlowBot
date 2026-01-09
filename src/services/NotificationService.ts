@@ -52,7 +52,7 @@ class NotificationService {
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: '#FF6B9D',
-          sound: 'default',
+          sound: 'alarm.mp3',
           lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
           bypassDnd: true,
           enableVibrate: true,
@@ -118,15 +118,42 @@ class NotificationService {
         scheduledDate.setDate(scheduledDate.getDate() + 1);
       }
 
-      const notificationTrigger = trigger.repeats
+      console.log(`[NotificationService] Current time: ${now.toLocaleString()}`);
+      console.log(`[NotificationService] Scheduling for: ${scheduledDate.toLocaleString()}`);
+
+      const notificationTrigger: any = trigger.repeats
         ? {
+            type: 'daily',
             hour: trigger.hour,
             minute: trigger.minute,
-            repeats: true,
           }
         : {
-            date: scheduledDate,
+            type: 'calendar',
+            date: scheduledDate, 
+            year: scheduledDate.getFullYear(),
+            month: scheduledDate.getMonth() + 1, 
           };
+
+
+      
+      const finalTrigger = trigger.repeats
+      ? {
+          type: 'daily',
+          hour: trigger.hour,
+          minute: trigger.minute,
+          channelId: 'reminders', 
+        }
+      : {
+          type: 'calendar',
+          year: scheduledDate.getFullYear(),
+          month: scheduledDate.getMonth() + 1, 
+          day: scheduledDate.getDate(),
+          hour: scheduledDate.getHours(),
+          minute: scheduledDate.getMinutes(),
+          channelId: 'reminders',
+        };
+
+      console.log('[NotificationService] Final Trigger:', JSON.stringify(finalTrigger));
 
       const id = await Notifications.scheduleNotificationAsync({
         content: {
@@ -137,7 +164,7 @@ class NotificationService {
           priority: Notifications.AndroidNotificationPriority?.MAX || 'max',
           categoryIdentifier: 'reminder',
         },
-        trigger: notificationTrigger,
+        trigger: finalTrigger,
       });
 
       console.log(`Alarm scheduled with ID: ${id} for ${trigger.hour}:${trigger.minute}`);

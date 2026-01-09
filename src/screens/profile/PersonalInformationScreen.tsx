@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
@@ -34,16 +35,17 @@ const personalInfoSchema = Yup.object().shape({
     .required("Email is required"),
   phoneNumber: Yup.string()
     .matches(/^[0-9]{10,15}$/, "Phone number must be 10-15 digits")
-    .nullable(),
+    .required("Phone number is required"),
   dateOfBirth: Yup.date()
     .max(new Date(), "Date of birth cannot be in the future")
-    .nullable(),
-  gender: Yup.string().nullable(),
+    .typeError("Invalid date")
+    .required("Date of birth is required"),
+  gender: Yup.string().required("Gender is required"),
 });
 
 const PersonalInformationScreen = () => {
   const navigation = useNavigation();
-  const { user, setUser } = useAuthStore();
+  const { user, userProfile, updateUserProfile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const [profileImage, setProfileImage] = useState(user?.photoURL || null);
@@ -52,73 +54,26 @@ const PersonalInformationScreen = () => {
 
   const handleSave = async (values: any) => {
     try {
+      if (!profileImage) {
+        Alert.alert("Error", "Profile image is compulsory");
+        return;
+      }
       setLoading(true);
 
-      // Update Firebase Auth profile
-      if (auth.currentUser) {
-        let photoURL = profileImage;
+      const profileData = {
+          phoneNumber: values.phoneNumber,
+          dob: values.dateOfBirth,
+          gender: values.gender,
+      };
 
-        // Upload image if it's a local URI
-        if (profileImage && profileImage.startsWith('file://')) {
-          try {
-            const response = await fetch(profileImage);
-            const blob = await response.blob();
-            const filename = profileImage.substring(profileImage.lastIndexOf('/') + 1);
-            const storageRef = ref(storage, `profile_images/${auth.currentUser.uid}/${filename}`);
-            
-            await uploadBytes(storageRef, blob);
-            photoURL = await getDownloadURL(storageRef);
-          } catch (uploadError) {
-            console.error("Image upload failed:", uploadError);
-            Alert.alert("Warning", "Failed to upload profile image. Changes may not be saved.");
-            // Proceed with existing photoURL or null if upload fails? 
-            // Better to keep local URI effectively failing persistence but not crashing flow?
-            // Or maybe return/throw?
-            // For now, let's process with what we have, but it won't persist if it's file://
-          }
-        }
+      await updateUserProfile(values.displayName, profileImage, profileData);
 
-        await updateProfile(auth.currentUser, {
-          displayName: values.displayName,
-          photoURL: photoURL,
-        });
+      Alert.alert(
+        "Success",
+        "Your profile has been updated successfully!",
+        [{ text: "OK", onPress: () => navigation.goBack() }]
+      );
 
-         // Sync user to backend
-         try {
-          const response = await fetch('http://192.168.18.225:5501/users', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              firebaseUid: auth.currentUser.uid,
-              email: auth.currentUser.email,
-              displayName: values.displayName,
-              photoURL: photoURL || null,
-              profile: {
-                phoneNumber: values.phoneNumber,
-                dateOfBirth: values.dateOfBirth,
-                gender: values.gender,
-              }
-            }),
-          });
-  
-          if (!response.ok) {
-            console.warn('Failed to sync user to backend:', await response.text());
-          }
-        } catch (syncError) {
-          console.error('Error syncing user to backend:', syncError);
-        }
-
-        // Update local user state
-        setUser(auth.currentUser);
-
-        Alert.alert(
-          "Success",
-          "Your profile has been updated successfully!",
-          [{ text: "OK", onPress: () => navigation.goBack() }]
-        );
-      }
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to update profile");
     } finally {
@@ -128,8 +83,6 @@ const PersonalInformationScreen = () => {
 
   const handleImagePicked = (uri: string) => {
     setImageLoading(true);
-    // Here you would upload the image to Firebase Storage
-    // For now, we'll just set the local URI
     setProfileImage(uri);
     setTimeout(() => setImageLoading(false), 500);
   };
@@ -137,12 +90,13 @@ const PersonalInformationScreen = () => {
   return (
     <SafeScreen>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        enabled={Platform.OS === "ios"}
         style={styles.container}
       >
         <Header
           heading="Personal Information"
-          subTitle="Update your profile details"
+          subTitle="View your profile details"
           showBackButton={true}
           onBackPress={() => navigation.goBack()}
           centerTitle={true}
@@ -151,27 +105,37 @@ const PersonalInformationScreen = () => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
           <Card style={styles.card}>
-            <ProfileImagePicker
-              imageUri={profileImage}
-              onImagePicked={handleImagePicked}
-              loading={imageLoading}
-            />
+            {/* Image Picker - Read Only (Just Image) */}
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                <Image
+                  source={{ uri: profileImage || "https://via.placeholder.com/150" }}
+                  style={{
+                    width: ms(120),
+                    height: ms(120),
+                    borderRadius: ms(60),
+                    borderWidth: 4,
+                    borderColor: Colors.TabActivePink,
+                  }}
+                />
+            </View>
 
             <Formik
+              enableReinitialize={true}
               initialValues={{
                 displayName: user?.displayName || "",
                 email: user?.email || "",
-                phoneNumber: "",
-                dateOfBirth: null as Date | null,
-                gender: "",
+                phoneNumber: userProfile?.phoneNumber || "",
+                dateOfBirth: userProfile?.dob ? new Date(userProfile.dob) : null,
+                gender: userProfile?.gender || "",
               }}
-              validationSchema={personalInfoSchema}
-              onSubmit={handleSave}
+              onSubmit={() => {}} // No submit
             >
               {(formikProps) => (
-                <View>
+                <View pointerEvents="none"> 
+                  {/* pointerEvents="none" on the container effectively disables all inputs inside! */}
                   <ProfileInput
                     label="Full Name"
                     formikProps={formikProps}
@@ -179,6 +143,7 @@ const PersonalInformationScreen = () => {
                     icon="person-outline"
                     placeholder="Enter your full name"
                     autoCapitalize="words"
+                    editable={false}
                   />
 
                   <ProfileInput
@@ -199,12 +164,17 @@ const PersonalInformationScreen = () => {
                     icon="call-outline"
                     placeholder="Enter your phone number"
                     keyboardType="phone-pad"
+                    editable={false}
                   />
+
+                  {/* For Date and Dropdown, since we use pointerEvents="none", they won't open. Good. 
+                      Styles might still look 'interactive' (arrows etc), but that's fine for "view".
+                  */}
 
                   <CustomDatePicker
                     label="Date of Birth"
                     value={formikProps.values.dateOfBirth}
-                    onDateChange={(date: Date) => formikProps.setFieldValue("dateOfBirth", date)}
+                    onDateChange={(date: Date) => {}}
                     placeholder="Select your date of birth"
                   />
 
@@ -212,25 +182,11 @@ const PersonalInformationScreen = () => {
                     label="Gender"
                     options={genderOptions}
                     selectedValue={formikProps.values.gender}
-                    onSelect={(value: string) => formikProps.setFieldValue("gender", value)}
+                    onSelect={(value: string) => {}}
                     placeholder="Select your gender"
                   />
-
-                  <GlowButton
-                    title={loading ? "Saving..." : "Save Changes"}
-                    onPress={formikProps.handleSubmit}
-                    disabled={loading || !formikProps.isValid}
-                    style={styles.saveButton}
-                    gradientColors={[Colors.ButtonPink, Colors.TabActivePink]}
-                  />
-
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => navigation.goBack()}
-                    disabled={loading}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
+                  
+                  {/* Removed Buttons */}
                 </View>
               )}
             </Formik>
@@ -254,19 +210,6 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(10),
     paddingHorizontal: horizontalScale(20),
     paddingVertical: verticalScale(25),
-  },
-  saveButton: {
-    marginTop: verticalScale(30),
-  },
-  cancelButton: {
-    alignItems: "center",
-    paddingVertical: verticalScale(15),
-    marginTop: verticalScale(10),
-  },
-  cancelButtonText: {
-    fontSize: textScale(15),
-    fontWeight: "600",
-    color: Colors.textSecondary,
   },
 });
 

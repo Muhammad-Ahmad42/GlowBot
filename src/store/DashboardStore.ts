@@ -51,22 +51,19 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setStressHistory: (stressHistory) => set({ stressHistory }),
   setDietPlan: (dietPlan) => set({ dietPlan }),
 
-  // Actions to fetch data from backend
   fetchScanHistory: async (userId: string) => {
     try {
       const response = await fetch(`${BASE_URL}/scans?userId=${userId}`);
       const scans = await response.json();
       
       if (scans && scans.length > 0) {
-        const latest = scans[0]; // Assuming sorted by createdAt desc
+        const latest = scans[0]; 
         
-        // Update latest scan
         set((state) => ({
           latestScan: {
             time: new Date(latest.createdAt).toLocaleDateString(),
             skinAnalysis: latest.analysis || { Acne: 0, Pigmentation: 0, Dullness: 0 },
           },
-          // Derive stress history from scans (with null checks)
           stressHistory: scans.slice(0, 7).map((scan: any) => {
             const stressValue = scan?.analysis?.Stress || 0;
             return {
@@ -91,7 +88,6 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     try {
       const response = await fetch(`${BASE_URL}/experts`);
       const data = await response.json();
-      // Map _id to id for frontend consumption
       const formattedData = data.map((expert: any) => ({
         ...expert,
         id: expert._id || expert.id

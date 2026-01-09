@@ -31,6 +31,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   fetchUserProducts: async (userId: string) => {
     set({ isLoading: true, error: null });
+    if (userId === "anonymous") {
+        set({ userRoutine: [], isLoading: false });
+        return;
+    }
     try {
       const userProducts = await ProductService.getUserProducts(userId);
       const products = userProducts.map((up: any) => ({

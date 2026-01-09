@@ -33,6 +33,7 @@ export interface ExpertProfile {
   available: boolean;
   fee: string;
   description: string;
+  imageUrl?: string;
 }
 
 export interface StressHistoryItem {

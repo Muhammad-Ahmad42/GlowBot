@@ -58,56 +58,77 @@ const ScanScreen = () => {
       });
 
       if (!result.canceled) {
-        setIsLoading(true);
-        const imageUri = result.assets[0].uri;
-        
-        try {
-          const userId = user?.uid || "anonymous";
-          await analyzeSkin(imageUri, userId);
-          setIsLoading(false);
-          if (user?.uid) fetchScanHistory(user.uid);
-          navigation.navigate("ScanResult");
-        } catch (error: any) {
-          setIsLoading(false);
-          
-          let errorTitle = "Analysis Failed";
-          let errorMessage = "Could not analyze the image. Please try again.";
-          
-          // Check if error has response data from backend
-          if (error.response?.data) {
-            const { error: backendError, errorType } = error.response.data;
-            
-            if (errorType === 'NO_FACE_DETECTED') {
-              errorTitle = "No Face Detected";
-              errorMessage = backendError || "Please ensure your face is clearly visible and well-lit, then try again.";
-            } else if (errorType === 'INVALID_IMAGE') {
-              errorTitle = "Invalid Image";
-              errorMessage = backendError || "Could not read the image. Please try taking another photo.";
-            } else {
-              errorMessage = backendError || errorMessage;
-            }
-          } else if (error.message) {
-            // Fallback to checking error message
-            if (error.message.includes("network")) {
-              errorTitle = "Network Error";
-              errorMessage = "Please check your internet connection and try again.";
-            } else if (error.message.includes("400")) {
-              errorTitle = "Analysis Error";
-              errorMessage = "The image could not be analyzed. Please ensure your face is clearly visible.";
-            } else if (error.message.includes("HTTP error")) {
-              errorTitle = "Server Error";
-              errorMessage = "Our servers are experiencing issues. Please try again in a moment.";
-            }
-          }
-          
-          Alert.alert(errorTitle, errorMessage, [
-            { text: "OK", style: "default" }
-          ]);
-        }
+        await processImage(result.assets[0].uri);
       }
     } catch (error) {
       console.log("Error launching camera:", error);
       Alert.alert("Error", "Could not open camera.");
+    }
+  };
+
+  const handleGalleryPress = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        await processImage(result.assets[0].uri);
+      }
+    } catch (error) {
+       console.log("Error launching gallery:", error);
+       Alert.alert("Error", "Could not open gallery.");
+    }
+  };
+
+  const processImage = async (imageUri: string) => {
+    setIsLoading(true);
+    
+    try {
+      const userId = user?.uid || "anonymous";
+      await analyzeSkin(imageUri, userId);
+      setIsLoading(false);
+      if (user?.uid) fetchScanHistory(user.uid);
+      navigation.navigate("ScanResult");
+    } catch (error: any) {
+      setIsLoading(false);
+      
+      let errorTitle = "Analysis Failed";
+      let errorMessage = "Could not analyze the image. Please try again.";
+      
+      // Check if error has response data from backend
+      if (error.response?.data) {
+        const { error: backendError, errorType } = error.response.data;
+        
+        if (errorType === 'NO_FACE_DETECTED') {
+          errorTitle = "No Face Detected";
+          errorMessage = backendError || "Please ensure your face is clearly visible and well-lit, then try again.";
+        } else if (errorType === 'INVALID_IMAGE') {
+          errorTitle = "Invalid Image";
+          errorMessage = backendError || "Could not read the image. Please try taking another photo.";
+        } else {
+          errorMessage = backendError || errorMessage;
+        }
+      } else if (error.message) {
+        // Fallback to checking error message
+        if (error.message.includes("network")) {
+          errorTitle = "Network Error";
+          errorMessage = "Please check your internet connection and try again.";
+        } else if (error.message.includes("400")) {
+          errorTitle = "Analysis Error";
+          errorMessage = "The image could not be analyzed. Please ensure your face is clearly visible.";
+        } else if (error.message.includes("HTTP error")) {
+          errorTitle = "Server Error";
+          errorMessage = "Our servers are experiencing issues. Please try again in a moment.";
+        }
+      }
+      
+      Alert.alert(errorTitle, errorMessage, [
+        { text: "OK", style: "default" }
+      ]);
     }
   };
 
@@ -169,6 +190,15 @@ const ScanScreen = () => {
               </View>
             </TouchableOpacity>
             <Text style={styles.actionText}>Tap to Start Scan</Text>
+            
+            <TouchableOpacity 
+                style={styles.galleryButton}
+                onPress={handleGalleryPress}
+                disabled={isLoading}
+            >
+                <Ionicons name="images" size={24} color={Colors.ButtonPink} />
+                <Text style={styles.galleryButtonText}>Upload from Gallery</Text>
+            </TouchableOpacity>
           </View>
 
           <RecentScansSection 
@@ -293,6 +323,22 @@ const styles = StyleSheet.create({
     fontSize: textScale(14),
     color: Colors.textSecondary,
     fontWeight: "500",
+  },
+  galleryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    paddingHorizontal: horizontalScale(20),
+    paddingVertical: verticalScale(12),
+    borderRadius: ms(25),
+    marginTop: verticalScale(20),
+    elevation: 2,
+  },
+  galleryButtonText: {
+    marginLeft: horizontalScale(10),
+    color: Colors.ButtonPink,
+    fontSize: textScale(14),
+    fontWeight: '600',
   },
   premiumBanner: {
     borderRadius: ms(20),

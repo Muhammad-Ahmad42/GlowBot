@@ -29,10 +29,12 @@ import { SignUpValidationSchema } from "../../utils/ValidationScemas";
 import { useAuthStore } from "../../store/AuthStore";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const SignUpScreen = () => {
   const navigation = useNavigation<any>();
   const { signUp, loading } = useAuthStore();
+  const insets = useSafeAreaInsets();
   const [errorNotification, setErrorNotification] = useState({
     visible: false,
     message: "",
@@ -56,14 +58,14 @@ const SignUpScreen = () => {
     try {
       if (image) {
         try {
-          await signUp(values.name, values.email, values.password, image);
+          await signUp(values.name, values.email, values.password, image, values.profile);
 
         } catch (uploadError) {
              console.log("Error in sign up flow", uploadError)
              throw uploadError;
         }
       } else {
-          await signUp(values.name, values.email, values.password, null);
+          await signUp(values.name, values.email, values.password, null, values.profile);
       }
 
     } catch (error: any) {
@@ -95,7 +97,7 @@ const SignUpScreen = () => {
         colors={[Colors.AuthBackgroundStart, Colors.AuthBackgroundEnd]}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20 }}>
           <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
             <Text style={styles.heading}>GlowBot</Text>
@@ -142,6 +144,7 @@ const SignUpScreen = () => {
                   gender: "",
                   age: "",
                   dob: null,
+                  phoneNumber: "",
                   email: "",
                   password: "",
                   confirmPassword: "",
@@ -150,10 +153,20 @@ const SignUpScreen = () => {
                 }}
                 validationSchema={SignUpValidationSchema}
                 onSubmit={(values, { setSubmitting }) => {
+                  if (!image) {
+                    setErrorNotification({
+                      visible: true,
+                      message: "Profile picture is compulsory. Please upload one.",
+                    });
+                    setSubmitting(false);
+                    return;
+                  }
+                  
                   const profileData = {
                     age: values.age,
                     gender: values.gender,
                     dob: values.dob,
+                    phoneNumber: values.phoneNumber,
                     allergies: values.allergies,
                   };
                   handleSignUp({ ...values, profile: profileData }, setSubmitting);
@@ -192,6 +205,14 @@ const SignUpScreen = () => {
                         placeholder="Enter your Name"
                         formikProps={formikProps}
                         formikKey="name"
+                      />
+
+                      <CustomInput
+                        label="Phone Number"
+                        placeholder="Enter your mobile number"
+                        formikProps={formikProps}
+                        formikKey="phoneNumber"
+                        keyboardType="phone-pad"
                       />
 
                       <Dropdown
